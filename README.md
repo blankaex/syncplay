@@ -21,6 +21,8 @@
 # SOFTWARE.
 -->
 
+Personal fork to remove certain warnings and improve the CLI UX.
+
 # Syncplay
 ![GitHub Actions build status](https://github.com/Syncplay/syncplay/workflows/Build/badge.svg)
 

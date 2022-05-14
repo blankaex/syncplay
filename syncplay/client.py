@@ -520,8 +520,8 @@ class SyncplayClient(object):
                 size = os.path.getsize(path)
             except:
                 size = 0
-        if not utils.isURL(path) and os.path.exists(path):
-            self.fileSwitch.notifyUserIfFileNotInMediaDirectory(filename, path)
+        # if not utils.isURL(path) and os.path.exists(path):
+        #     self.fileSwitch.notifyUserIfFileNotInMediaDirectory(filename, path)
         filename, size = self.__executePrivacySettings(filename, size)
         self.userlist.currentUser.setFile(filename, duration, size, path)
         self.sendFile()
@@ -1862,10 +1862,10 @@ class SyncplayPlaylist():
                 return
             else:
                 path = self._client.fileSwitch.findFilepath(filename, highPriority=True)
-            if path:
-                self._client.openFile(path, resetPosition)
-            else:
-                self._ui.showErrorMessage(getMessage("cannot-find-file-for-playlist-switch-error").format(filename))
+            # if path:
+            #     self._client.openFile(path, resetPosition)
+            # else:
+            #     self._ui.showErrorMessage(getMessage("cannot-find-file-for-playlist-switch-error").format(filename))
                 return
         except IndexError:
             self._ui.showDebugMessage("Could not change playlist index due to IndexError")
@@ -2246,21 +2246,21 @@ class FileSwitchManager(object):
                     return True
             return False
 
-    def notifyUserIfFileNotInMediaDirectory(self, filenameToFind, path):
-        directoryToFind = os.path.dirname(path)
-        if directoryToFind in self.mediaDirectoriesNotFound:
-            return
-        if self.mediaDirectories is not None and self.mediaFilesCache is not None:
-            if directoryToFind in self.mediaFilesCache:
-                return
-            for directory in self.mediaFilesCache:
-                files = self.mediaFilesCache[directory]
-                if filenameToFind in files:
-                    return
-                if directoryToFind in self.mediaFilesCache:
-                    return
-        if self.isDirectoryInList(directoryToFind, self.mediaDirectories):
-            return
-        directoryToFind = str(directoryToFind)
-        self._client.ui.showErrorMessage(getMessage("added-file-not-in-media-directory-error").format(directoryToFind))
-        self.mediaDirectoriesNotFound.append(directoryToFind)
+    # def notifyUserIfFileNotInMediaDirectory(self, filenameToFind, path):
+    #     directoryToFind = os.path.dirname(path)
+    #     if directoryToFind in self.mediaDirectoriesNotFound:
+    #         return
+    #     if self.mediaDirectories is not None and self.mediaFilesCache is not None:
+    #         if directoryToFind in self.mediaFilesCache:
+    #             return
+    #         for directory in self.mediaFilesCache:
+    #             files = self.mediaFilesCache[directory]
+    #             if filenameToFind in files:
+    #                 return
+    #             if directoryToFind in self.mediaFilesCache:
+    #                 return
+    #     if self.isDirectoryInList(directoryToFind, self.mediaDirectories):
+    #         return
+    #     directoryToFind = str(directoryToFind)
+    #     self._client.ui.showErrorMessage(getMessage("added-file-not-in-media-directory-error").format(directoryToFind))
+    #     self.mediaDirectoriesNotFound.append(directoryToFind)
