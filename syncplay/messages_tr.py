@@ -2,8 +2,21 @@
 
 """Turkish dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 tr = {
     "LANGUAGE": "Türkçe", # Turkish
+    "LANGUAGE-TAG": "tr",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "Turkish.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Syncplay'i ortam dosyalarıyla ilişkilendirin.",
+    "installer-shortcut": "Aşağıdaki konumlarda kısayollar oluşturun:",
+    "installer-start-menu": "Başlangıç menüsü",
+    "installer-desktop": "Masaüstü",
+    "installer-quick-launch-bar": "Hızlı Başlatma Çubuğu",
+    "installer-automatic-updates": "Güncellemeleri otomatik denetle",
+    "installer-uninstall-configuration": "Yapılandırma dosyasını silin.",
 
     # Client notifications
     "config-cleared-notification": "Ayarlar temizlendi. Geçerli bir konfigürasyon kaydettiğinizde değişiklikler kaydedilecektir.",
@@ -177,7 +190,7 @@ tr = {
     "file-argument": 'oynatmak için dosya',
     "args-argument": 'oynatıcı seçenekleri, ile başlayan seçenekleri iletmeniz gerekiyorsa - bunların başına tek \'--\' argümanı ekleyin',
     "clear-gui-data-argument": 'QSettings olarak depolanan yol ve pencere durumu GUI verilerini sıfırlar',
-    "language-argument": 'Syncplay mesajları için dil (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'Syncplay mesajları için dil ({})', # Languages
 
     "version-argument": 'versiyonunuzu yazdırır',
     "version-message": "Syncplay sürümünü kullanıyorsunuz {} ({})",
@@ -487,6 +500,10 @@ tr = {
     "server-startTLS-argument": "Dosya yolundaki sertifika dosyalarını kullanarak TLS bağlantılarını etkinleştirin",
     "server-messed-up-motd-unescaped-placeholders": "Günün Mesajında çıkış karaktersiz yer tutucular var. Tüm $ işaretleri iki katına çıkarılmalıdır ($$).",
     "server-messed-up-motd-too-long": "Günün Mesajı çok uzun - maksimum {} karakter olmalı, {} verildi.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Bilinmeyen komut {}",  # message

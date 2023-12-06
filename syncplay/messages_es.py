@@ -2,8 +2,21 @@
 
 """Spanish dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 es = {
     "LANGUAGE": "Español",
+    "LANGUAGE-TAG": "es",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "Spanish.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Asociar Syncplay con archivos multimedia.",
+    "installer-shortcut": "Crear accesos directos en las siguientes ubicaciones:",
+    "installer-start-menu": "Menú de inicio",
+    "installer-desktop": "Escritorio",
+    "installer-quick-launch-bar": "Barra de acceso rápido",
+    "installer-automatic-updates": "Buscar actualizaciones automáticamente",
+    "installer-uninstall-configuration": "Borrar archivo de configuración.",
 
     # Client notifications
     "config-cleared-notification": "Ajustes limpiados. Los cambios serán guardados cuando almacenes una configuración válida.",
@@ -177,7 +190,7 @@ es = {
     "file-argument": 'archivo a reproducir',
     "args-argument": 'opciones del reproductor, si necesitas pasar opciones que empiezan con -, pásalas utilizando \'--\'',
     "clear-gui-data-argument": 'restablece ruta y los datos del estado de la ventana GUI almacenados como QSettings',
-    "language-argument": 'lenguaje para los mensajes de Syncplay (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'lenguaje para los mensajes de Syncplay ({})', # Languages
 
     "version-argument": 'imprime tu versión',
     "version-message": "Estás usando la versión de Syncplay {} ({})",
@@ -486,6 +499,10 @@ es = {
     "server-startTLS-argument": "Habilitar conexiones TLS usando los archivos de certificado en la ruta provista",
     "server-messed-up-motd-unescaped-placeholders": "El mensaje del dia contiene marcadores de posición sin escapar. Todos los signos $ deberían ser dobles ($$).",
     "server-messed-up-motd-too-long": "El mensaje del día es muy largo - máximo de {} caracteres, se recibieron {}.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Comando desconocido {}",  # message

@@ -2,8 +2,21 @@
 
 """Russian dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 ru = {
     "LANGUAGE": "Русский",  # (Russian)
+    "LANGUAGE-TAG": "ru",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "Russian.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Ассоциировать Syncplay с видеофайлами",
+    "installer-shortcut": "Создать ярлыки:",
+    "installer-start-menu": "в меню Пуск",
+    "installer-desktop": "на рабочем столе",
+    "installer-quick-launch-bar": "в меню быстрого запуска",
+    "installer-automatic-updates": "Проверять обновления автоматически", # TODO: Confirm Russian translation ("Check for updates automatically")
+    "installer-uninstall-configuration": "Удалить файл настроек.",
 
     # Client notifications
     "config-cleared-notification": "Настройки сброшены. Изменения вступят в силу при сохранении корректной конфигурации.",
@@ -176,7 +189,7 @@ ru = {
     "file-argument": 'воспроизводимый файл',
     "args-argument": 'параметры проигрывателя; если нужно передать параметры, начинающиеся с - , то сначала пишите \'--\'',
     "clear-gui-data-argument": 'сбрасывает путь и данные о состоянии окна GUI, хранимые как QSettings',
-    "language-argument": 'язык сообщений Syncplay (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'язык сообщений Syncplay ({})', # Languages
 
     "version-argument": 'выводит номер версии',
     "version-message": "Вы используете Syncplay версии {} ({})",
@@ -292,12 +305,12 @@ ru = {
     "autoplay-menu-label": "Показывать кнопку &автовоспроизведения",
     "autoplay-guipushbuttonlabel": "Стартовать, когда все будут готовы",
     "autoplay-minimum-label": "Минимум зрителей:",
-    "hideemptyrooms-menu-label": "Hide empty persistent rooms", # TODO: Translate
+    "hideemptyrooms-menu-label": "Скрыть пустые пустоянные комнаты",
     "sendmessage-label": "Выслать",
 
     "ready-guipushbuttonlabel": "Я готов",
 
-    "roomuser-heading-label": "Комната / Зритель",
+    "roomuser-heading-label": "Комната/Зритель",
 
     "size-heading-label": "Размер",
     "duration-heading-label": "Время",
@@ -456,8 +469,8 @@ ru = {
     "nofile-note": "(Никакой файл не проигрывается)",
 
     # Server messages to client
-    "new-syncplay-available-motd-message": "Вы используете Syncplay версии {}. Доступна более новая версия на https://syncplay.pl/",  # ClientVersion
-    "persistent-rooms-notice": "NOTICE: This server uses persistent rooms, which means that the playlist information is stored between playback sessions. If you want to create a room where information is not saved then put -temp at the end of the room name.", # TO DO: Translate - NOTE: Do not translate the word -temp
+    "new-syncplay-available-motd-message": "Вы используете Syncplay версии {}. На https://syncplay.pl/ доступна более новая версия.",  # ClientVersion
+    "persistent-rooms-notice": "ВНИМАНИЕ: Этот сервер использует постоянные комнаты, это означает что информация списка воспроизведения сохраняется между сеансами воспроизведения. Если вы хотите создать комнату, в которой информация не сохраняется, поставьте -temp в конце названия комнаты.",
 
     # Server notifications
     "welcome-server-notification": "Добро пожаловать на сервер Syncplay версии {0}",  # version
@@ -472,10 +485,10 @@ ru = {
     "server-password-argument": 'пароль к серверу',
     "server-isolate-room-argument": 'должны ли комнаты быть изолированными?',
     "server-salt-argument": "генерировать пароли к управляемым комнатам на основании указанной строки (соли)",
-    "server-disable-ready-argument": "отключить статусы готов/не готов",
+    "server-disable-ready-argument": "отключить статусы готовности",
     "server-motd-argument": "путь к файлу, из которого будет извлекаться MOTD-сообщение",
-    "server-rooms-argument": "path to database file to use and/or create to store persistent room data. Enables rooms to persist without watchers and through restarts", # TODO: Translate
-    "server-permanent-rooms-argument": "path to file which lists permenant rooms that will be listed even if the room is empty (in the form of a text file which lists one room per line) - requires persistent rooms to be enabled", # TODO: Translate
+    "server-rooms-argument": "путь к файлу базы данных для использования и/или создания хранилища постоянных данных о комнате. Позволяет комнатам сохраняться без просматривающих, а также после перезапусков",
+    "server-permanent-rooms-argument": "путь к файлу со списком постоянных комнат, которые будут перечислены, даже если комната пуста (в виде текстового файла, в котором указана одна комната на строку) - требуется, чтобы постоянные комнаты были включены",
     "server-chat-argument": "Должен ли чат быть отключён?",
     "server-chat-maxchars-argument": "Максимальное число символов в сообщениях в чате (по умолчанию {})",
     "server-maxusernamelength-argument": "Максимальное число символов в именах пользователей (по умолчанию {})",
@@ -483,6 +496,10 @@ ru = {
     "server-startTLS-argument": "Включить TLS-соединения используя файлы сертификатов в указанном пути",
     "server-messed-up-motd-unescaped-placeholders": "MOTD-сообщение содержит неэкранированные спецсимволы. Все знаки $ должны быть продублированы ($$).",
     "server-messed-up-motd-too-long": "MOTD-сообщение слишком длинное: максимальная длина - {} символ(ов), текущая длина - {} символ(ов).",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Неизвестная команда: {}",  # message

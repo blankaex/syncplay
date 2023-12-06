@@ -2,8 +2,21 @@
 
 """Simplified Chinese dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 zh_CN = {
     "LANGUAGE": "简体中文",
+    "LANGUAGE-TAG": "zh_CN",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "SimpChinese.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "将Syncplay与多媒体文件关联。",
+    "installer-shortcut": "在以下位置创建快捷方式:",
+    "installer-start-menu": "开始菜单",
+    "installer-desktop": "桌面",
+    "installer-quick-launch-bar": "快速启动栏",
+    "installer-automatic-updates": "自动检查更新",
+    "installer-uninstall-configuration": "删除配置文件",
 
     # Client notifications
     "config-cleared-notification": "设置已清除。 当你存储一个有效的配置时，更改将被保存。",
@@ -487,6 +500,10 @@ zh_CN = {
     "server-startTLS-argument": "使用提供的路径中的证书文件启用TLS连接",
     "server-messed-up-motd-unescaped-placeholders": "每日信息中有未转义的占位符。所有 $ 字符应当重复两遍 ($$).",
     "server-messed-up-motd-too-long": "每日信息过长 - 最大{}个chars, 给出的长度{}",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "未知命令 {}",  # message

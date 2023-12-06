@@ -19,11 +19,13 @@ from twisted.internet.protocol import ClientFactory
 from twisted.internet import reactor, task, defer, threads
 
 try:
+    SSL_CERT_FILE = None
     import certifi
-    from twisted.internet.ssl import Certificate, optionsForClientTLS
+    import pem
+    from twisted.internet.ssl import Certificate, optionsForClientTLS, trustRootFromCertificates
     certPath = certifi.where()
     if os.path.exists(certPath):
-        os.environ['SSL_CERT_FILE'] = certPath
+        SSL_CERT_FILE = certPath
     elif 'zip' in certPath:
         import tempfile
         import zipfile
@@ -32,7 +34,7 @@ try:
         archive = zipfile.ZipFile(zipPath, 'r')
         tmpDir = tempfile.gettempdir()
         extractedPath = archive.extract(memberPath, tmpDir)
-        os.environ['SSL_CERT_FILE'] = extractedPath
+        SSL_CERT_FILE = extractedPath
 except:
     pass
 
@@ -134,6 +136,7 @@ class SyncplayClient(object):
         self._warnings = self._WarningManager(self._player, self.userlist, self.ui, self)
         self.fileSwitch = FileSwitchManager(self)
         self.playlist = SyncplayPlaylist(self)
+        self.playlistMayNeedRestoring = False
 
         self._serverSupportsTLS = True
 
@@ -567,8 +570,15 @@ class SyncplayClient(object):
         if self._config['trustedDomains']:
             for entry in self._config['trustedDomains']:
                 trustedDomain, _, path = entry.partition('/')
-                if o.hostname not in (trustedDomain, "www." + trustedDomain):
-                    # domain does not match
+                foundMatch = False
+                if o.hostname in (trustedDomain, "www." + trustedDomain):
+                    foundMatch = True
+                elif "*" in trustedDomain:
+                    wildcardRegex = "^("+re.escape(trustedDomain).replace("\\*","([^.]+)")+")$"
+                    wildcardMatch = bool(re.fullmatch(wildcardRegex, o.hostname, re.IGNORECASE))
+                    if wildcardMatch:
+                        foundMatch = True
+                if not foundMatch:
                     continue
                 if path and not o.path.startswith('/' + path):
                     # trusted domain has a path component and it does not match
@@ -633,6 +643,9 @@ class SyncplayClient(object):
         self.serverVersion = version
         self.checkForFeatureSupport(featureList)
 
+    def sendFeaturesToPlayer(self):
+        self._player.setFeatures(self.serverFeatures)
+
     def checkForFeatureSupport(self, featureList):
         self.serverFeatures = {
             "featureList": utils.meetsMinVersion(self.serverVersion, constants.FEATURE_LIST_MIN_VERSION),
@@ -669,7 +682,10 @@ class SyncplayClient(object):
             "backslashSubstituteCharacter={}".format(constants.MPV_INPUT_BACKSLASH_SUBSTITUTE_CHARACTER)]
         self.ui.setFeatures(self.serverFeatures)
         if self._player:
-            self._player.setFeatures(self.serverFeatures)
+            self.sendFeaturesToPlayer()
+        else:
+            # Player might not have been loaded if connecting to localhost (#545)
+            self.addPlayerReadyCallback(lambda x: self.sendFeaturesToPlayer())
 
     def getSanitizedCurrentUserFile(self):
         if self.userlist.currentUser.file:
@@ -831,10 +847,9 @@ class SyncplayClient(object):
         port = int(port)
         self._endpoint = HostnameEndpoint(reactor, host, port)
         try:
-            caCertFP = open(os.environ['SSL_CERT_FILE'])
-            caCertTwisted = Certificate.loadPEM(caCertFP.read().encode('utf-8'))
-            caCertFP.close()
-            self.protocolFactory.options = optionsForClientTLS(hostname=host)
+            certs = pem.parse_file(SSL_CERT_FILE)
+            trustRoot = trustRootFromCertificates([Certificate.loadPEM(str(cert)) for cert in certs])
+            self.protocolFactory.options = optionsForClientTLS(hostname=host, trustRoot=trustRoot)
             self._clientSupportsTLS = True
         except Exception as e:
             self.ui.showDebugMessage(str(e))
@@ -844,6 +859,7 @@ class SyncplayClient(object):
         def retry(retries):
             self._lastGlobalUpdate = None
             self.ui.setSSLMode(False)
+            self.playlistMayNeedRestoring = True
             if retries == 0:
                 self.onDisconnect()
             if retries > constants.RECONNECT_RETRIES:
@@ -1110,8 +1126,8 @@ class SyncplayClient(object):
                 publicServers = ast.literal_eval(publicServers)
             return response["version-status"], response["version-message"] if "version-message" in response\
                 else None, response["version-url"] if "version-url" in response else None, publicServers
-        except:
-            return "failed", getMessage("update-check-failed-notification").format(syncplay.version), constants.SYNCPLAY_DOWNLOAD_URL, None
+        except Exception as e:
+            return "failed", str(e)+"\n-----\n"+getMessage("update-check-failed-notification").format(syncplay.version), constants.SYNCPLAY_DOWNLOAD_URL, None
 
     class _WarningManager(object):
         def __init__(self, player, userlist, ui, client):
@@ -1170,12 +1186,12 @@ class SyncplayClient(object):
         def checkReadyStates(self):
             if not self._client:
                 return
-            if self._client.getPlayerPaused() or not self._userlist.currentUser.isReady():
+            if self._client.getPlayerPaused() or not self._userlist.currentUser.isReady() or not self._userlist.areAllRelevantUsersInRoomReady():
                 self._warnings["not-all-ready"]["displayedFor"] = 0
-            if self._userlist.areYouAloneInRoom() or not self._userlist.currentUser.canControl():
+            if self._userlist.areYouAloneInRoom():
                 if self._warnings["not-all-ready"]['timer'].running:
                     self._warnings["not-all-ready"]['timer'].stop()
-            elif not self._userlist.areAllUsersInRoomReady():
+            elif not self._userlist.areAllRelevantUsersInRoomReady():
                 self._displayReadySameWarning()
                 if constants.SHOW_OSD_WARNINGS and not self._warnings["not-all-ready"]['timer'].running:
                     self._warnings["not-all-ready"]['timer'].start(constants.WARNING_OSD_MESSAGES_LOOP_INTERVAL, True)
@@ -1436,9 +1452,28 @@ class SyncplayUserlist(object):
             user = self._users[username]
             user.setControllerStatus(True)
 
+    def areAllRelevantUsersInRoomReady(self, requireSameFilenames=False):
+        if not self.currentUser.isReady():
+            return False
+        if self.currentUser.canControl():
+            return self.areAllUsersInRoomReady(requireSameFilenames)
+        else:
+            for user in self._users.values():
+                if user.room == self.currentUser.room and user.canControl():
+                    if user.isReadyWithFile() == False:
+                        return False
+                    elif (
+                            requireSameFilenames and
+                            (
+                                    self.currentUser.file is None
+                                    or user.file is None
+                                    or not utils.sameFilename(self.currentUser.file['name'], user.file['name'])
+                            )
+                    ):
+                        return False
+        return True
+
     def areAllUsersInRoomReady(self, requireSameFilenames=False):
-        if not self.currentUser.canControl():
-            return True
         if not self.currentUser.isReady():
             return False
         for user in self._users.values():
@@ -1446,12 +1481,12 @@ class SyncplayUserlist(object):
                 if user.isReadyWithFile() == False:
                     return False
                 elif (
-                    requireSameFilenames and
-                    (
-                        self.currentUser.file is None
-                        or user.file is None
-                        or not utils.sameFilename(self.currentUser.file['name'], user.file['name'])
-                    )
+                        requireSameFilenames and
+                        (
+                                self.currentUser.file is None
+                                or user.file is None
+                                or not utils.sameFilename(self.currentUser.file['name'], user.file['name'])
+                        )
                 ):
                     return False
         return True
@@ -1921,9 +1956,20 @@ class SyncplayPlaylist():
             playlistFile.write(playlistToSave)
             self._ui.showMessage("Playlist saved as {}".format(path)) # TODO: Move to messages_en
 
+    def playlistNeedsRestoring(self, files, username):
+        if self._client.playlistMayNeedRestoring:
+            self._client.playlistMayNeedRestoring = False
+            return self._client.sharedPlaylistIsEnabled() and self._playlist != None and files == [] and username == None and not self._playlistBufferIsFromOldRoom(self._client.userlist.currentUser.room)
 
     def changePlaylist(self, files, username=None, resetIndex=False):
+        if self.playlistNeedsRestoring(files, username):
+            self._ui.showDebugMessage("Restoring playlist on reconnect...")
+            files = self._playlist.copy()
+            self._client._protocol.setPlaylist(files)
+            self._client._protocol.setPlaylistIndex(self._playlistIndex)
+            return
         self.queuedIndexFilename = None
+        self._client.playlistMayNeedRestoring = False
         if self._playlist == files:
             if self._playlistIndex != 0 and resetIndex:
                 self.changeToPlaylistIndex(0)

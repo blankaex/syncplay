@@ -2,8 +2,21 @@
 
 """English dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 en = {
     "LANGUAGE": "English",
+    "LANGUAGE-TAG": "en",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "English.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Associate Syncplay with multimedia files.",
+    "installer-shortcut": "Create Shortcuts in following locations:",
+    "installer-start-menu": "Start Menu",
+    "installer-desktop": "Desktop",
+    "installer-quick-launch-bar": "Quick Launch Bar",
+    "installer-automatic-updates": "Check for updates automatically",
+    "installer-uninstall-configuration": "Delete configuration file.",
 
     # Client notifications
     "config-cleared-notification": "Settings cleared. Changes will be saved when you store a valid configuration.",
@@ -177,7 +190,7 @@ en = {
     "file-argument": 'file to play',
     "args-argument": 'player options, if you need to pass options starting with - prepend them with single \'--\' argument',
     "clear-gui-data-argument": 'resets path and window state GUI data stored as QSettings',
-    "language-argument": 'language for Syncplay messages (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'language for Syncplay messages ({})', # Languages
 
     "version-argument": 'prints your version',
     "version-message": "You're using Syncplay version {} ({})",
@@ -479,7 +492,7 @@ en = {
     "server-disable-ready-argument": "disable readiness feature",
     "server-motd-argument": "path to file from which motd will be fetched",
     "server-rooms-argument": "path to database file to use and/or create to store persistent room data. Enables rooms to persist without watchers and through restarts",
-    "server-permanent-rooms-argument": "path to file which lists permenant rooms that will be listed even if the room is empty (in the form of a text file which lists one room per line) - requires persistent rooms to be enabled",
+    "server-permanent-rooms-argument": "path to file which lists permanent rooms that will be listed even if the room is empty (in the form of a text file which lists one room per line) - requires persistent rooms to be enabled",
     "server-chat-argument": "Should chat be disabled?",
     "server-chat-maxchars-argument": "Maximum number of characters in a chat message (default is {})", # Default number of characters
     "server-maxusernamelength-argument": "Maximum number of characters in a username (default is {})",
@@ -487,6 +500,10 @@ en = {
     "server-startTLS-argument": "Enable TLS connections using the certificate files in the path provided",
     "server-messed-up-motd-unescaped-placeholders": "Message of the Day has unescaped placeholders. All $ signs should be doubled ($$).",
     "server-messed-up-motd-too-long": "Message of the Day is too long - maximum of {} chars, {} given.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Unknown command {}",  # message

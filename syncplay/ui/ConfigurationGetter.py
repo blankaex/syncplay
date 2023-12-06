@@ -5,7 +5,7 @@ import codecs
 import re
 import os
 import sys
-from configparser import SafeConfigParser, DEFAULTSECT
+from configparser import ConfigParser, DEFAULTSECT
 
 from syncplay import constants, utils, version, milestone
 from syncplay.messages import getMessage, setLanguage, isValidLanguage
@@ -389,7 +389,7 @@ class ConfigurationGetter(object):
                 open(iniPath, 'w').close()
             else:
                 return
-        parser.readfp(codecs.open(iniPath, "r", "utf_8_sig"))
+        parser.read_file(codecs.open(iniPath, "r", "utf_8_sig"))
         for section, options in list(self._iniStructure.items()):
             if parser.has_section(section):
                 for option in options:
@@ -408,10 +408,12 @@ class ConfigurationGetter(object):
                 sys.exit()
 
     def _promptForMissingArguments(self, error=None):
-        if self._config['noGui']:
+        if self._config['noGui'] or utils.isWindowsConsole():
             if error:
                 print("{}!".format(error))
             print(getMessage("missing-arguments-error"))
+            if utils.isWindowsConsole():
+                input(getMessage("enter-to-exit-prompt"))
             sys.exit()
         else:
             from syncplay.ui.GuiConfiguration import GuiConfiguration
@@ -432,7 +434,7 @@ class ConfigurationGetter(object):
         if self._config['noStore']:
             return
         parser = SafeConfigParserUnicode(strict=False)
-        parser.readfp(codecs.open(iniPath, "r", "utf_8_sig"))
+        parser.read_file(codecs.open(iniPath, "r", "utf_8_sig"))
         for section, options in list(self._iniStructure.items()):
             if not parser.has_section(section):
                 parser.add_section(section)
@@ -514,13 +516,14 @@ class ConfigurationGetter(object):
         self._overrideConfigWithArgs(args)
         if not self._config['noGui']:
             try:
-                from syncplay.vendor.Qt import QtWidgets, IsPySide, IsPySide2, QtGui
+                from syncplay.vendor.Qt import QtWidgets, IsPySide, IsPySide2, IsPySide6, QtGui
                 from syncplay.vendor.Qt.QtCore import QCoreApplication
                 from syncplay.vendor import qt5reactor
-                if not (IsPySide2 or IsPySide):
+                if not (IsPySide6 or IsPySide2 or IsPySide):
                     raise ImportError
                 if QCoreApplication.instance() is None:
                     self.app = QtWidgets.QApplication(sys.argv)
+                    self.app.setDesktopFileName("syncplay")
                     if isWindows():
                         try:
                             from syncplay.vendor import darkdetect
@@ -549,7 +552,7 @@ class ConfigurationGetter(object):
         # Arguments not validated yet - booleans are still text values
         if self._config['language']:
             setLanguage(self._config['language'])
-        if (self._config['forceGuiPrompt'] == "True" or not self._config['file']) and not self._config['noGui']:
+        if (self._config['forceGuiPrompt'] == "True" or not self._config['file']) and not self._config['noGui'] and not utils.isWindowsConsole():
             self._forceGuiPrompt()
         self._checkConfig()
         self._saveConfig(iniPath)
@@ -592,7 +595,7 @@ class ConfigurationGetter(object):
         self._config = backup
 
 
-class SafeConfigParserUnicode(SafeConfigParser):
+class SafeConfigParserUnicode(ConfigParser):
     def write(self, fp):
         """Write an .ini-format representation of the configuration state."""
         if self._defaults:

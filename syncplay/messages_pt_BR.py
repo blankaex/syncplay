@@ -2,8 +2,21 @@
 
 """Brazilian Portuguese dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 pt_BR = {
     "LANGUAGE": "Português do Brasil",
+    "LANGUAGE-TAG": "pt_BR",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "PortugueseBR.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Associar Syncplay aos arquivos multimídia.",
+    "installer-shortcut": "Criar atalhos nos seguintes locais:",
+    "installer-start-menu": "Menu Iniciar",
+    "installer-desktop": "Área de trabalho",
+    "installer-quick-launch-bar": "Barra de acesso rápido",
+    "installer-automatic-updates": "Verificar atualizações automaticamente",
+    "installer-uninstall-configuration": "Deletar arquivo de configuração.",
 
     # Client notifications
     "config-cleared-notification": "Configurações removidas. Mudanças serão salvas quando você armazenar uma configuração válida.",
@@ -178,7 +191,7 @@ pt_BR = {
     "file-argument": 'arquivo a ser tocado',
     "args-argument": 'opções do reprodutor; se você precisar passar opções começando com -, as preceda com um único argumento \'--\'',
     "clear-gui-data-argument": 'redefine o caminho e o estado de dados da janela da GUI para as de QSettings',
-    "language-argument": 'idioma para mensagens do Syncplay (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'idioma para mensagens do Syncplay ({})', # Languages
 
     "version-argument": 'exibe sua versão',
     "version-message": "Você está usando o Syncplay versão {} ({})",
@@ -487,6 +500,10 @@ pt_BR = {
     "server-startTLS-argument": "Habilita conexões TLS usando os arquivos de certificado no caminho fornecido",
     "server-messed-up-motd-unescaped-placeholders": "A Mensagem do Dia possui placeholders não escapados. Todos os sinais de $ devem ser dobrados (como em $$).",
     "server-messed-up-motd-too-long": "A Mensagem do Dia é muito longa - máximo de {} caracteres, {} foram dados.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Comando desconhecido: {}",  # message

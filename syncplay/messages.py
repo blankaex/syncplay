@@ -1,22 +1,28 @@
 # coding:utf8
 from syncplay import constants
 
-from . import messages_en
-from . import messages_ru
 from . import messages_de
-from . import messages_it
+from . import messages_en
 from . import messages_es
-from . import messages_pt_BR
-from . import messages_pt_PT
-from . import messages_tr
+from . import messages_eo
+from . import messages_fi
 from . import messages_fr
+from . import messages_it
+from . import messages_pt_PT
+from . import messages_pt_BR
+from . import messages_tr
+from . import messages_ru
 from . import messages_zh_CN
+from . import messages_ko
 import re
 
+# In alphabetical order
 messages = {
     "de": messages_de.de,
     "en": messages_en.en,
     "es": messages_es.es,
+    "eo": messages_eo.eo,
+    "fi": messages_fi.fi,
     "fr": messages_fr.fr,
     "it": messages_it.it,
     "pt_PT": messages_pt_PT.pt_PT,
@@ -24,6 +30,7 @@ messages = {
     "tr": messages_tr.tr,
     "ru": messages_ru.ru,
     "zh_CN": messages_zh_CN.zh_CN,
+     "ko": messages_ko.ko,
     "CURRENT": None
 }
 
@@ -37,6 +44,13 @@ def getLanguages():
     for lang in messages:
         if lang != "CURRENT":
             langList[lang] = getMessage("LANGUAGE", lang)
+    return langList
+
+def getLanguageTags():
+    langList = {}
+    for lang in messages:
+        if lang != "CURRENT":
+            langList[lang] = getMessage("LANGUAGE-TAG", lang)
     return langList
 
 def isNoOSDMessage(message):
@@ -106,3 +120,13 @@ def getMessage(type_, locale=None):
         print("WARNING: Cannot find message '{}'!".format(type_))
         #return "!{}".format(type_)  # TODO: Remove
         raise KeyError(type_)
+
+def populateLanguageArgument():
+    languageTags = "/".join(getLanguageTags())
+    langList = {}
+    for lang in messages:
+        if lang != "CURRENT":
+            messages[lang]["language-argument"] = messages[lang]["language-argument"].format(languageTags)
+    return langList
+
+populateLanguageArgument()

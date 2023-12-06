@@ -2,8 +2,21 @@
 
 """French dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 fr = {
     "LANGUAGE": "Français",
+    "LANGUAGE-TAG": "fr",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "French.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Associer Syncplay avec les fichiers multimedias.",
+    "installer-shortcut": "Créer Racourcis pour les chemins suivants:",
+    "installer-start-menu": "Menu Démarrer",
+    "installer-desktop": "Bureau",
+    "installer-quick-launch-bar": "Barre de Lancement Rapide",
+    "installer-automatic-updates": "Vérifier automatiquement les mises à jour",
+    "installer-uninstall-configuration": "Supprimer le fichier de configuration.",
 
     # Client notifications
     "config-cleared-notification": "Paramètres effacés. Les modifications seront enregistrées lorsque vous enregistrez une configuration valide.",
@@ -177,7 +190,7 @@ fr = {
     "file-argument": "fichier à lire",
     "args-argument": 'player options, if you need to pass options starting with - prepend them with single \'--\' argument',
     "clear-gui-data-argument": "réinitialise les données GUI du chemin et de l'état de la fenêtre stockées en tant que QSettings",
-    "language-argument": "langue pour les messages Syncplay (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)",
+    "language-argument": "langue pour les messages Syncplay ({})", # Languages
 
     "version-argument": "imprime votre version",
     "version-message": "Vous utilisez Syncplay version {} ({})",
@@ -487,6 +500,10 @@ fr = {
     "server-startTLS-argument": "Activer les connexions TLS à l'aide des fichiers de certificat dans le chemin fourni",
     "server-messed-up-motd-unescaped-placeholders": "Le message du jour a des espaces réservés non échappés. Tous les signes $ doivent être doublés ($$).",
     "server-messed-up-motd-too-long": "Le message du jour est trop long: {}caractères maximum, {} donnés.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Commande inconnue {}",  # message

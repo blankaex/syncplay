@@ -12,7 +12,6 @@ import subprocess
 import sys
 import time
 import traceback
-import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -38,6 +37,8 @@ def isMacOS():
 def isBSD():
     return constants.OS_BSD in sys.platform or sys.platform.startswith(constants.OS_DRAGONFLY)
 
+def isWindowsConsole():
+    return os.path.basename(sys.executable) == "SyncplayConsole.exe"
 
 def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
     """Retry calling the decorated function using an exponential backoff.
@@ -82,6 +83,8 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 
 
 def parseTime(timeStr):
+    if ":" not in timeStr:
+        return float(timeStr)
     regex = re.compile(constants.PARSE_TIME_REGEX)
     parts = regex.match(timeStr)
     if not parts:
@@ -201,7 +204,7 @@ def blackholeStdoutForFrozenWindow():
                         path = os.path.join(os.getenv('HOME', '.'), fname)
                     else:
                         path = os.path.join(os.getenv('APPDATA', '.'), fname)
-                    self._file = open(path, 'a')
+                    self._file = open(path, 'a', encoding='utf-8')
                     # TODO: Handle errors.
                 if self._file is not None:
                     self._file.write(text)
@@ -224,6 +227,28 @@ def blackholeStdoutForFrozenWindow():
                 pass
 
         sys.stdout = Blackhole()
+        del Blackhole
+
+    elif isWindowsConsole():
+        class Blackhole(object):
+            softspace = 0
+
+            def write(self, text):
+                pass
+
+            def flush(self):
+                pass
+
+        class Stderr(object):
+            softspace = 0
+            _file = None
+            _error = None
+
+            def flush(self):
+                if self._file is not None:
+                    self._file.flush()
+
+        sys.stderr = Blackhole()
         del Blackhole
 
 

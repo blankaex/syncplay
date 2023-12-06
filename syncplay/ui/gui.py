@@ -19,7 +19,7 @@ from syncplay.utils import resourcespath
 from syncplay.utils import isLinux, isWindows, isMacOS
 from syncplay.utils import formatTime, sameFilename, sameFilesize, sameFileduration, RoomPasswordProvider, formatSize, isURL
 from syncplay.vendor import Qt
-from syncplay.vendor.Qt import QtCore, QtWidgets, QtGui, __binding__, __binding_version__, __qt_version__, IsPySide, IsPySide2
+from syncplay.vendor.Qt import QtCore, QtWidgets, QtGui, __binding__, __binding_version__, __qt_version__, IsPySide, IsPySide2, IsPySide6
 from syncplay.vendor.Qt.QtCore import Qt, QSettings, QSize, QPoint, QUrl, QLine, QDateTime
 applyDPIScaling = True
 if isLinux():
@@ -33,7 +33,9 @@ except AttributeError:
     pass  # To ignore error "Attribute Qt::AA_EnableHighDpiScaling must be set before QCoreApplication is created"
 if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, applyDPIScaling)
-if IsPySide2:
+if IsPySide6:
+    from PySide6.QtCore import QStandardPaths
+elif IsPySide2:
     from PySide2.QtCore import QStandardPaths
 if isMacOS() and IsPySide:
     from Foundation import NSURL
@@ -828,7 +830,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.listTreeView.setFirstColumnSpanned(roomtocheck, self.listTreeView.rootIndex(), True)
                 roomtocheck += 1
             self.listTreeView.header().setStretchLastSection(False)
-            if IsPySide2:
+            if IsPySide6 or IsPySide2:
                 self.listTreeView.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
                 self.listTreeView.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
                 self.listTreeView.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
@@ -842,7 +844,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.listTreeView.header().width() < (NarrowTabsWidth+self.listTreeView.header().sectionSize(3)):
                 self.listTreeView.header().resizeSection(3, self.listTreeView.header().width()-NarrowTabsWidth)
             else:
-                if IsPySide2:
+                if IsPySide6 or IsPySide2:
                     self.listTreeView.header().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
                 if IsPySide:
                     self.listTreeView.header().setResizeMode(3, QtWidgets.QHeaderView.Stretch)
@@ -1026,7 +1028,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 defaultdirectory = QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.HomeLocation)
             else:
                 defaultdirectory = ""
-        elif IsPySide2:
+        elif IsPySide6 or IsPySide2:
             if self.config["mediaSearchDirectories"] and os.path.isdir(self.config["mediaSearchDirectories"][0]) and includeUserSpecifiedDirectories:
                 defaultdirectory = self.config["mediaSearchDirectories"][0]
             elif includeUserSpecifiedDirectories and os.path.isdir(self.mediadirectory):
@@ -1353,9 +1355,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @needsClient
     def setOffset(self):
+        oldoffset = str(self._syncplayClient.getUserOffset())
         newoffset, ok = QtWidgets.QInputDialog.getText(
             self, getMessage("setoffset-msgbox-label"),
-            getMessage("offsetinfo-msgbox-label"), QtWidgets.QLineEdit.Normal, "")
+            getMessage("offsetinfo-msgbox-label"), QtWidgets.QLineEdit.Normal, oldoffset)
         if ok and newoffset != '':
             o = re.match(constants.UI_OFFSET_REGEX, "o " + newoffset)
             if o:
@@ -1511,7 +1514,7 @@ class MainWindow(QtWidgets.QMainWindow):
         window.listLayout.addWidget(window.listSplit)
         window.roomsCombobox = QtWidgets.QComboBox(self)
         window.roomsCombobox.setEditable(True)
-        caseSensitiveCompleter = QtWidgets.QCompleter("", self)
+        caseSensitiveCompleter = QtWidgets.QCompleter(self)
         caseSensitiveCompleter.setCaseSensitivity(Qt.CaseSensitive)
         window.roomsCombobox.setCompleter(caseSensitiveCompleter)
         #window.roomsCombobox.setMaxLength(constants.MAX_ROOM_NAME_LENGTH)
@@ -1900,8 +1903,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 timeDelta = currentDateTimeValue.toPython() - self.lastCheckedForUpdates.toPython()
                 if timeDelta.total_seconds() > constants.AUTOMATIC_UPDATE_CHECK_FREQUENCY:
                     self.checkForUpdates()
-        except:
-            self.showDebugMessage("Automatic check for updates failed. An update check was manually trigggered.")
+        except Exception as e:
+            self.showDebugMessage("Automatic check for updates failed. An update check was manually trigggered. Reason: {}".format(str(e)))
             self.checkForUpdates()
 
     def userCheckForUpdates(self):
@@ -2058,7 +2061,10 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.beginGroup("MainWindow")
         self.resize(settings.value("size", QSize(700, 500)))
         movePos = settings.value("pos", QPoint(200, 200))
-        windowGeometry = QtWidgets.QApplication.desktop().availableGeometry(self)
+        if not IsPySide6:
+            windowGeometry = QtWidgets.QApplication.desktop().availableGeometry(self)
+        else:
+            windowGeometry = QtWidgets.QApplication.primaryScreen().geometry()
         posIsOnScreen = windowGeometry.contains(QtCore.QRect(movePos.x(), movePos.y(), 1, 1))
         if not posIsOnScreen:
             movePos = QPoint(200,200)
@@ -2101,7 +2107,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if isMacOS():
             self.setWindowFlags(self.windowFlags())
         else:
-            self.setWindowFlags(self.windowFlags() & Qt.AA_DontUseNativeMenuBar)
+            try:    
+            	self.setWindowFlags(self.windowFlags() & Qt.AA_DontUseNativeMenuBar)
+            except TypeError:
+            	self.setWindowFlags(self.windowFlags())
         self.setWindowTitle("Syncplay v" + version + revision)
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.addTopLayout(self)

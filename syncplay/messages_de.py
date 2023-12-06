@@ -2,8 +2,21 @@
 
 """Deutsch dictionary"""
 
+# Filename, dictionary name and LANGUAGE-TAG value based on ISO country code. Language tag listed at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c?redirectedfrom=MSDN
+
 de = {
     "LANGUAGE": "Deutsch",  # (German)
+    "LANGUAGE-TAG": "de",
+
+    # Strings for Windows NSIS installer
+    "installer-language-file": "German.nlf", # Relevant .nlf file at https://github.com/kichik/nsis/tree/master/Contrib/Language%20files
+    "installer-associate": "Syncplay als Standardprogramm für Multimedia-Dateien verwenden.",
+    "installer-shortcut": "Erstelle Verknüpfungen an folgenden Orten:",
+    "installer-start-menu": "Startmenü",
+    "installer-desktop": "Desktop",
+    "installer-quick-launch-bar": "Schnellstartleiste",
+    "installer-automatic-updates": "Automatisch nach Updates suchen;",
+    "installer-uninstall-configuration": "Konfigurationsdatei löschen.",
 
     # Client notifications
     "config-cleared-notification": "Einstellungen gelöscht. Änderungen werden gespeichert, wenn du eine gültige Konfiguration speicherst.",
@@ -177,7 +190,7 @@ de = {
     "file-argument": 'Abzuspielende Datei',
     "args-argument": 'Player-Einstellungen; Wenn du Einstellungen, die mit - beginnen, nutzen willst, stelle ein einzelnes \'--\'-Argument davor',
     "clear-gui-data-argument": 'Setzt die Pfad- und GUI-Fenster-Daten die in den QSettings gespeichert sind zurück',
-    "language-argument": 'Sprache für Syncplay-Nachrichten (de/en/ru/it/es/pt_BR/pt_PT/tr/fr/zh_CN)',
+    "language-argument": 'Sprache für Syncplay-Nachrichten ({})', # Languages
 
     "version-argument": 'gibt die aktuelle Version aus',
     "version-message": "Du verwendest Syncplay v. {} ({})",
@@ -486,6 +499,10 @@ de = {
     "server-startTLS-argument": "Erlaube TLS-Verbindungen mit den Zertifikatdateien im Angegebenen Pfad",
     "server-messed-up-motd-unescaped-placeholders": "Die Nachricht des Tages hat unmaskierte Platzhalter. Alle $-Zeichen sollten verdoppelt werden ($$).",
     "server-messed-up-motd-too-long": "Die Nachricht des Tages ist zu lang - Maximal {} Zeichen, aktuell {}.",
+    "server-listen-only-on-ipv4": "Listen only on IPv4 when starting the server.",
+    "server-listen-only-on-ipv6": "Listen only on IPv6 when starting the server.",
+    "server-interface-ipv4": "The IP address to bind to for IPv4. Leaving it empty defaults to using all.",
+    "server-interface-ipv6": "The IP address to bind to for IPv6. Leaving it empty defaults to using all.",
 
     # Server errors
     "unknown-command-server-error": "Unbekannter Befehl {}",  # message
