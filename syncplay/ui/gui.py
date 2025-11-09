@@ -43,14 +43,14 @@ if isMacOS() and IsPySide:
 lastCheckedForUpdates = None
 from syncplay.vendor import darkdetect
 if isMacOS() or isWindows():
-	isDarkMode = darkdetect.isDark()
+    isDarkMode = darkdetect.isDark()
 else:
-	isDarkMode = None
+    isDarkMode = None
 
 
 class ConsoleInGUI(ConsoleUI):
-    def showMessage(self, message, noTimestamp=False):
-        self._syncplayClient.ui.showMessage(message, True)
+    def showMessage(self, message, noTimestamp=False, isMotd=False):
+        self._syncplayClient.ui.showMessage(message, noTimestamp=True, isMotd=isMotd)
 
     def showDebugMessage(self, message):
         self._syncplayClient.ui.showDebugMessage(message)
@@ -159,7 +159,7 @@ class AboutDialog(QtWidgets.QDialog):
             "<br />Python " + python_version() + " - " + __binding__ + " " + __binding_version__ +
             " - Qt " + __qt_version__ + "</center></p>")
         licenseLabel = QtWidgets.QLabel(
-            "<center><p>Copyright &copy; 2012&ndash;2019 Syncplay</p><p>" +
+            "<center><p>Copyright &copy; 2012&ndash;2025 Syncplay</p><p>" +
             getMessage("about-dialog-license-text") + "</p></center>")
         aboutIcon = QtGui.QIcon()
         aboutIcon.addFile(resourcespath + "syncplayAbout.png")
@@ -542,7 +542,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def getSSLInformation(self):
         return self.sslInformation
 
-    def showMessage(self, message, noTimestamp=False):
+    def showMessage(self, message, noTimestamp=False, isMotd=False):
         message = str(message)
         username = None
         messageWithUsername = re.match(constants.MESSAGE_WITH_USERNAME_REGEX, message, re.UNICODE)
@@ -552,6 +552,10 @@ class MainWindow(QtWidgets.QMainWindow):
         message = message.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
         if username:
             message = constants.STYLE_USER_MESSAGE.format(constants.STYLE_USERNAME, username, message)
+        # When showing a MOTD, escape spaces and use a monospace font to preserve the look of ASCII art.
+        if isMotd:
+            message = message.replace(" ", "&nbsp;")
+            message = "<code>{}</code>".format(message)
         message = message.replace("\n", "<br />")
         if noTimestamp:
             self.newMessage("{}<br />".format(message))
@@ -819,8 +823,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 path = self._syncplayClient.fileSwitch.findFilepath(filename)
                 if path:
                     menu.addAction(QtGui.QPixmap(resourcespath + "folder_film.png"), getMessage('open-containing-folder'), lambda: utils.open_system_file_browser(path))
-        else:
-            return
+
+        if roomToJoin == self._syncplayClient.getRoom() and self._syncplayClient.userlist.currentUser.canControl() and self._syncplayClient.userlist.isReadinessSupported(requiresOtherUsers=False) and self._syncplayClient.serverFeatures["setOthersReadiness"]:
+            if self._syncplayClient.userlist.isReady(username):
+                addSetUserAsReadyText = getMessage("setasnotready-menu-label").format(shortUsername)
+                menu.addAction(QtGui.QPixmap(resourcespath + "cross.png"), addSetUserAsReadyText, lambda: self._syncplayClient.setOthersReadiness(username, False))
+            else:
+                addSetUserAsNotReadyText = getMessage("setasready-menu-label").format(shortUsername)
+                menu.addAction(QtGui.QPixmap(resourcespath + "tick.png"), addSetUserAsNotReadyText, lambda: self._syncplayClient.setOthersReadiness(username, True))
         menu.exec_(self.listTreeView.viewport().mapToGlobal(position))
 
     def updateListGeometry(self):
@@ -997,6 +1007,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self._syncplayClient.setPaused(True)
 
     @needsClient
+    def reconnectToServer(self):
+        """
+        Trigger a manual reconnection using the client's built-in retry mechanism.
+        This is simpler and more reliable than doing a complete restart.
+        """
+        try:
+            if self._syncplayClient:
+                self._syncplayClient.manualReconnect()
+            else:
+                self.showErrorMessage(getMessage("connection-failed-notification"))
+        except Exception as e:
+            self.showErrorMessage(getMessage("reconnect-failed-error").format(str(e)))
+
     def exitSyncplay(self):
         self._syncplayClient.stop()
 
@@ -1474,7 +1497,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.listTreeView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.listTreeView.customContextMenuRequested.connect(self.openRoomMenu)
         window.listlabel = QtWidgets.QLabel(getMessage("userlist-heading-label"))
-        if isMacOS:
+        if isMacOS():
             window.listlabel.setMinimumHeight(21)
             window.sslButton = QtWidgets.QPushButton(QtGui.QPixmap(resourcespath + 'lock_green.png').scaled(14, 14),"")
             window.sslButton.setVisible(False)
@@ -1510,6 +1533,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if isMacOS(): window.userlistLayout.setContentsMargins(3, 0, 3, 0)
 
         window.listSplit = QtWidgets.QSplitter(Qt.Vertical, self)
+        window.listSplit.setHandleWidth(6)
+        window.listSplit.setStyle(QtWidgets.QStyleFactory.create("fusion"))
         window.listSplit.addWidget(window.userlistFrame)
         window.listLayout.addWidget(window.listSplit)
         window.roomsCombobox = QtWidgets.QComboBox(self)
@@ -1544,8 +1569,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         window.topSplit.addWidget(window.outputFrame)
         window.topSplit.addWidget(window.listFrame)
+        window.topSplit.setHandleWidth(6)
         window.topSplit.setStretchFactor(0, 4)
         window.topSplit.setStretchFactor(1, 5)
+        window.topSplit.setStyle(QtWidgets.QStyleFactory.create("fusion"))
         window.mainLayout.addWidget(window.topSplit)
         window.topSplit.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
 
@@ -1700,6 +1727,9 @@ class MainWindow(QtWidgets.QMainWindow):
         window.openAction = window.fileMenu.addAction(QtGui.QPixmap(resourcespath + 'film_folder_edit.png'),
                                                       getMessage("setmediadirectories-menu-label"))
         window.openAction.triggered.connect(self.openSetMediaDirectoriesDialog)
+
+        window.reconnectAction = window.fileMenu.addAction(getMessage("reconnect-menu-label"))
+        window.reconnectAction.triggered.connect(self.reconnectToServer)
 
         window.exitAction = window.fileMenu.addAction(getMessage("exit-menu-label"))
         if isMacOS():
@@ -2108,9 +2138,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setWindowFlags(self.windowFlags())
         else:
             try:    
-            	self.setWindowFlags(self.windowFlags() & Qt.AA_DontUseNativeMenuBar)
+                self.setWindowFlags(self.windowFlags() & Qt.AA_DontUseNativeMenuBar)
             except TypeError:
-            	self.setWindowFlags(self.windowFlags())
+                self.setWindowFlags(self.windowFlags())
         self.setWindowTitle("Syncplay v" + version + revision)
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.addTopLayout(self)

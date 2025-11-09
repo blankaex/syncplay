@@ -62,6 +62,9 @@ es = {
     "authenticated-as-controller-notification": "{} autentificado como operador de la sala",
     "created-controlled-room-notification": "Sala administrada '{}' creada con contraseña '{}'. Por favor guarda esta información para referencias futuras!\n\nIn managed rooms everyone is kept in sync with the room operator(s) who are the only ones who can pause, unpause, seek, and change the playlist.\n\nYou should ask regular viewers to join the room '{}' but the room operators can join the room '{}' to automatically authenticate themselves.", # RoomName, operatorPassword, roomName, roomName:operatorPassword # TODO: Translate
 
+    "other-set-as-ready-notification": "{} was set as ready by {}", # User set as ready, user who set them as ready # TODO: Translate
+    "other-set-as-not-ready-notification": "{} was set as not ready by {}", # User set as not ready, user who set them as not ready # TODO: Translate
+
     "file-different-notification": "El archivo que reproduces parece ser diferente al archivo de {}",  # User
     "file-differences-notification": "Tu archivo difiere de la(s) siguiente(s) forma(s): {}",  # Differences
     "room-file-differences": "Diferencias de archivo: {}",  # File differences (filename, size, and/or duration)
@@ -98,6 +101,8 @@ es = {
     "commandlist-notification/offset": "\to[+-]duration - offset local playback by the given duration (in seconds or min:sec) from the server seek position - this is a deprecated feature", # TODO: Translate
     "commandlist-notification/help": "\th - esta ayuda",
     "commandlist-notification/toggle": "\tt - activa/inactiva señal que estás listo para ver",
+    "commandlist-notification/setready": "\tsr [name] - sets user as ready",  # TODO: Translate
+    "commandlist-notification/setnotready": "\tsn [name] - sets user as not ready",  # TODO: Translate
     "commandlist-notification/create": "\tc [nombre] - crear sala administrada usando el nombre de la sala actual",
     "commandlist-notification/auth": "\ta [contraseña] - autentificar como operador de la sala con la contraseña de operador",
     "commandlist-notification/chat": "\tch [mensaje] - enviar un mensaje en la sala",
@@ -158,6 +163,7 @@ es = {
     "feature-chat": "chat",  # used for not-supported-by-server-error
     "feature-readiness": "preparación",  # used for not-supported-by-server-error
     "feature-managedRooms": "salas administradas",  # used for not-supported-by-server-error
+    "feature-setOthersReadiness": "readiness override",  # used for not-supported-by-server-error # TODO: Translate
 
     "not-supported-by-server-error": "La característica {} no está soportada por este servidor..",  # feature
     "shared-playlists-not-supported-by-server-error": "El servidor no admite la función de listas de reproducción compartidas. Para asegurarse de que funciona correctamente, se requiere un servidor que ejecute Syncplay {}+, pero el servidor está ejecutando Syncplay {}.",  # minVersion, serverVersion
@@ -167,7 +173,8 @@ es = {
     "invalid-offset-value": "Valor de desplazamiento inválido",
 
     "switch-file-not-found-error": "No se pudo cambiar el archivo '{0}'. Syncplay busca en los directorios de medios especificados.",  # File not found
-    "folder-search-timeout-error": "Se anuló la búsqueda de medios en el directorio de medios, ya que tardó demasiado buscando en '{}'. Esto ocurrirá si seleccionas una carpeta con demasiadas subcarpetas en tu lista de carpetas de medios para buscar. Para que el cambio automático de archivos vuelva a funcionar, selecciona Archivo->Establecer directorios de medios en la barra de menú y elimina este directorio o reemplázalo con una subcarpeta apropiada. Si la carpeta está bien, puedes volver a reactivarlo seleccionando Archivo->Establecer directorios de medios y presionando 'OK'.",  # Folder
+    "folder-search-timeout-error": "Se anuló la búsqueda de medios en el directorio de medios, ya que tardó demasiado buscando en '{}' (after having processed the first {:,} files). Esto ocurrirá si seleccionas una carpeta con demasiadas subcarpetas en tu lista de carpetas de medios para buscar. Para que el cambio automático de archivos vuelva a funcionar, selecciona Archivo->Establecer directorios de medios en la barra de menú y elimina este directorio o reemplázalo con una subcarpeta apropiada. Si la carpeta está bien, puedes volver a reactivarlo seleccionando Archivo->Establecer directorios de medios y presionando 'OK'.", # Folder, Files processed - Note: {:,} is {} but with added commas seprators - TODO: Translate
+    "folder-search-timeout-warning": "Warning: It has taken {} seconds to scan {:,} files in the folder '{}'. This will occur if you select a folder with too many sub-folders in your list of media folders to search through or if there are too many files to process.",  # Folder, Files processed. Note: {:,} is {} but with added commas seprators. TODO: Translate
     "folder-search-first-file-timeout-error": "Se anuló la búsqueda de medios en '{}', ya que tardó demasiado buscando en acceder al directorio. Esto podría ocurrir si se trata de una unidad de red, o si tienes configurada la unidad para centrifugar luego de cierto período de inactividad. Para que el cambio automático de archivos vuelva a funcionar, por favor dirígete a Archivo->Establecer directorios de medios y elimina el directorio o resuelve el problema (p.ej. cambiando la configuración de ahorro de energía).",  # Folder
     "added-file-not-in-media-directory-error": "Has cargado un archivo en '{}' el cual no es un directorio de medios conocido. Puedes agregarlo como un directorio de medios seleccionado Archivo->Establecer directorios de medios en la barra de menú.",  # Folder
     "no-media-directories-error": "No se han establecido directorios de medios. Para que las funciones de lista de reproducción compartida y cambio de archivos funcionen correctamente, selecciona Archivo->Establecer directorios de medios y especifica dónde debe buscar Syncplay para encontrar archivos multimedia.",
@@ -536,6 +543,9 @@ es = {
     "addotherusersstreamstoplaylist-menu-label": "Agregar el flujo de {} a la lista de reproducción",  # [Username]
     "openusersstream-menu-label": "Abrir el flujo de {}",  # [username]'s
     "openusersfile-menu-label": "Abrir el archivo de {}",  # [username]'s
+
+    "setasready-menu-label": "Set {} as ready",  # [Username] # TODO: Translate
+    "setasnotready-menu-label": "Set {} as not ready",  # [Username] # TODO: Translate
 
     "playlist-instruction-item-message": "Desplazar aquí el archivo para agregarlo a la lista de reproducción compartida.",
     "sharedplaylistenabled-tooltip": "Los operadores de la sala pueden agregar archivos a una lista de reproducción sincronizada, para que visualizar la misma cosa sea más sencillo para todos. Configurar directorios multimedia en 'Misc'.",

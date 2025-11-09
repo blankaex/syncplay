@@ -29,7 +29,7 @@ MPLAYER_OSD_LEVEL = 1
 UI_TIME_FORMAT = "[%X] "
 CONFIG_NAMES = [".syncplay", "syncplay.ini"]  # Syncplay searches first to last
 DEFAULT_CONFIG_NAME = "syncplay.ini"
-RECENT_CLIENT_THRESHOLD = "1.7.3"  # This and higher considered 'recent' clients (no warnings)
+RECENT_CLIENT_THRESHOLD = "1.7.4"  # This and higher considered 'recent' clients (no warnings)
 MUSIC_FORMATS = [".mp3", ".m4a", ".m4p", ".wav", ".aiff", ".r", ".ogg", ".flac"] # ALL LOWER CASE!
 WARN_OLD_CLIENTS = True  # Use MOTD to inform old clients to upgrade
 LIST_RELATIVE_CONFIGS = True  # Print list of relative configs loaded
@@ -107,10 +107,11 @@ FALLBACK_MAX_FILENAME_LENGTH = 250  # Number of displayed characters
 # Options for the File Switch feature:
 FOLDER_SEARCH_FIRST_FILE_TIMEOUT = 25.0  # Secs - How long to wait to find the first file in folder search (to take account of HDD spin up)
 FOLDER_SEARCH_TIMEOUT = 20.0  # Secs - How long to wait until searches in folder to update cache are aborted (after first file is found)
+FOLDER_SEARCH_WARNING_THRESHOLD = 2.0 # Secs - how long until a warning saying how many files have been scanned
 FOLDER_SEARCH_DOUBLE_CHECK_INTERVAL = 30.0  # Secs - Frequency of updating cache
 
 # Usually there's no need to adjust these
-DOUBLE_CHECK_REWIND = False
+DOUBLE_CHECK_REWIND = True
 LAST_PAUSED_DIFF_THRESHOLD = 2
 FILENAME_STRIP_REGEX = r"[-~_\.\[\](): ]"
 CONTROL_PASSWORD_STRIP_REGEX = r"[^a-zA-Z0-9\-]"
@@ -131,6 +132,8 @@ COMMANDS_PLAYLIST = ['playlist', 'ql', 'pl']
 COMMANDS_SELECT = ['select', 'qs']
 COMMANDS_DELETE = ['delete', 'd', 'qd']
 COMMANDS_NEXT = ["next", "qn"]
+COMMANDS_SETREADY = ['setready', 'sr']
+COMMANDS_SETNOTREADY = ['setready', 'snr']
 MPC_MIN_VER = "1.6.4"
 MPC_BE_MIN_VER = "1.5.2.3123"
 VLC_MIN_VERSION = "2.2.1"
@@ -142,6 +145,7 @@ USER_READY_MIN_VERSION = "1.3.0"
 SHARED_PLAYLIST_MIN_VERSION = "1.4.0"
 CHAT_MIN_VERSION = "1.5.0"
 FEATURE_LIST_MIN_VERSION = "1.5.0"
+SET_OTHERS_READINESS_MIN_VERSION = "1.7.2"
 
 IINA_PATHS = ['/Applications/IINA.app/Contents/MacOS/IINA']
 MPC_PATHS = [
@@ -176,6 +180,8 @@ MPV_PATHS = ["mpv", "/opt/mpv/mpv", r"c:\program files\mpv\mpv.exe", r"c:\progra
              r"c:\program Files (x86)\mpv\mpv.exe", r"c:\program Files (x86)\mpv-player\mpv.exe",
              "/Applications/mpv.app/Contents/MacOS/mpv"]
 MPVNET_PATHS = [r"c:\program files\mpv.net\mpvnet.exe", r"c:\program Files (x86)\mpv.net\mpvnet.exe"]
+MEMENTO_PATHS = ["memento", "/usr/bin/memento", "/usr/local/bin/memento", r"C:\Program Files\Memento\memento.exe"]
+
 try:
     import os
     MPVNET_PATHS.append(os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WindowsApps\mpvnet.exe'))
@@ -199,6 +205,7 @@ IINA_ICONPATH = "iina.png"
 MPLAYER_ICONPATH = "mplayer.png"
 MPV_ICONPATH = "mpv.png"
 MPVNET_ICONPATH = "mpvnet.png"
+MEMENTO_ICONPATH = "memento.png"
 MPC_ICONPATH = "mpc-hc.png"
 MPC64_ICONPATH = "mpc-hc64.png"
 MPC_BE_ICONPATH = "mpc-be.png"
@@ -269,6 +276,7 @@ MPV_ARGS = {'force-window': 'yes',
             'term-playing-msg': '<SyncplayUpdateFile>\nANS_filename=${filename}\nANS_length=${=duration:${=length:0}}\nANS_path=${path}\n</SyncplayUpdateFile>',
             'keep-open-pause': 'yes'
             }
+MPV_NET_EXTRA_ARGS = { 'auto-load-folder': 'no' }
 
 IINA_PROPERTIES = {'geometry': '25%+100+100', 
                    'idle': 'yes',

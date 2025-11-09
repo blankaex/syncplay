@@ -44,8 +44,6 @@ from syncplay.constants import PRIVACY_SENDHASHED_MODE, PRIVACY_DONTSEND_MODE, \
 from syncplay.messages import getMissingStrings, getMessage, isNoOSDMessage
 from syncplay.protocols import SyncClientProtocol
 from syncplay.utils import isMacOS
-
-
 class SyncClientFactory(ClientFactory):
     def __init__(self, client, retry=constants.RECONNECT_RETRIES):
         self._client = client
@@ -74,6 +72,7 @@ class SyncplayClient(object):
         constants.FOLDER_SEARCH_FIRST_FILE_TIMEOUT = config['folderSearchFirstFileTimeout']
         constants.FOLDER_SEARCH_TIMEOUT = config['folderSearchTimeout']
         constants.FOLDER_SEARCH_DOUBLE_CHECK_INTERVAL = config['folderSearchDoubleCheckInterval']
+        constants.FOLDER_SEARCH_WARNING_THRESHOLD = config['folderSearchWarningThreshold']
 
         self.controlpasswords = {}
         self.lastControlPasswordAttempt = None
@@ -84,6 +83,9 @@ class SyncplayClient(object):
         self.lastRewindTime = None
         self.lastUpdatedFileTime = None
         self.lastAdvanceTime = None
+        self.fileOpenBeforeChangingPlaylistIndex = None
+        self.waitingToLoadNewfile = False
+        self.waitingToLoadNewfileSince = None
         self.lastConnectTime = None
         self.lastSetRoomTime = None
         self.hadFirstPlaylistIndex = False
@@ -249,15 +251,23 @@ class SyncplayClient(object):
         if self._lastGlobalUpdate:
             self._lastPlayerUpdate = time.time()
             if (pauseChange or seeked) and self._protocol:
+                if self.recentlyRewound() or self._recentlyAdvanced():
+                    self._protocol.sendState(self._globalPosition, self.getPlayerPaused(), False, None, True)
+                    return
                 if seeked:
                     self.playerPositionBeforeLastSeek = self.getGlobalPosition()
                 self._protocol.sendState(self.getPlayerPosition(), self.getPlayerPaused(), seeked, None, True)
+
+    def prepareToChangeToNewPlaylistItemAndRewind(self):
+        self.ui.showDebugMessage("Preparing to change to new playlist index and rewind...")
+        self.fileOpenBeforeChangingPlaylistIndex = self.userlist.currentUser.file["path"] if self.userlist.currentUser.file else None
+        self.waitingToLoadNewfile = True
+        self.waitingToLoadNewfileSince = time.time()
 
     def prepareToAdvancePlaylist(self):
         if self.playlist.canSwitchToNextPlaylistIndex():
             self.ui.showDebugMessage("Preparing to advance playlist...")
             self.lastAdvanceTime = time.time()
-            self._protocol.sendState(0, True, True, None, True)
         else:
             self.ui.showDebugMessage("Not preparing to advance playlist because the next file cannot be switched to")
 
@@ -660,9 +670,9 @@ class SyncplayClient(object):
             "maxChatMessageLength": constants.FALLBACK_MAX_CHAT_MESSAGE_LENGTH,
             "maxUsernameLength": constants.FALLBACK_MAX_USERNAME_LENGTH,
             "maxRoomNameLength": constants.FALLBACK_MAX_ROOM_NAME_LENGTH,
-            "maxFilenameLength": constants.FALLBACK_MAX_FILENAME_LENGTH
+            "maxFilenameLength": constants.FALLBACK_MAX_FILENAME_LENGTH,
+            "setOthersReadiness": utils.meetsMinVersion(self.serverVersion, constants.SET_OTHERS_READINESS_MIN_VERSION)
         }
-
         if featureList:
             self.serverFeatures.update(featureList)
         if not utils.meetsMinVersion(self.serverVersion, constants.SHARED_PLAYLIST_MIN_VERSION):
@@ -733,6 +743,7 @@ class SyncplayClient(object):
         features["readiness"] = True
         features["managedRooms"] = True
         features["persistentRooms"] = True
+        features["setOthersReadiness"] = True
 
         return features
 
@@ -860,9 +871,8 @@ class SyncplayClient(object):
             self._clientSupportsTLS = False
 
         def retry(retries):
-            self._lastGlobalUpdate = None
-            self.ui.setSSLMode(False)
-            self.playlistMayNeedRestoring = True
+            # Use shared state reset method
+            self._performRetryStateReset()
             if retries == 0:
                 self.onDisconnect()
             if retries > constants.RECONNECT_RETRIES:
@@ -871,8 +881,6 @@ class SyncplayClient(object):
                 reactor.callLater(0.1, self.stop, True)
                 return None
 
-            self.ui.showMessage(getMessage("reconnection-attempt-notification"))
-            self.reconnecting = True
             return(0.1 * (2 ** min(retries, 5)))
 
         self._reconnectingService = ClientService(self._endpoint, self.protocolFactory, retryPolicy=retry)
@@ -909,6 +917,42 @@ class SyncplayClient(object):
         if promptForAction:
             self.ui.promptFor(getMessage("enter-to-exit-prompt"))
 
+    def _performRetryStateReset(self):
+        """
+        Shared method to reset connection state for both automatic and manual retries.
+        This contains the common logic from the original retry function.
+        """
+        self._lastGlobalUpdate = None
+        self.ui.setSSLMode(False)
+        self.playlistMayNeedRestoring = True
+        self.ui.showMessage(getMessage("reconnection-attempt-notification"))
+        self.reconnecting = True
+
+    def manualReconnect(self):
+        """
+        Trigger a manual reconnection by forcing the retry mechanism.
+        This performs the same steps as the automatic retry function.
+        """
+        if not self._running or not hasattr(self, '_reconnectingService'):
+            self.ui.showErrorMessage(getMessage("connection-failed-notification"))
+            return
+
+        from twisted.internet import reactor
+
+        def performReconnect():
+            # Apply the shared state reset logic
+            self._performRetryStateReset()
+
+            # Stop current service and restart it to trigger reconnection
+            if self._reconnectingService and self._reconnectingService.running:
+                self._reconnectingService.stopService()
+
+            # Restart the service to trigger a reconnection attempt
+            self._reconnectingService.startService()
+
+        # Use callLater for threading purposes as suggested
+        reactor.callLater(0.1, performReconnect)
+
     def requireServerFeature(featureRequired):
         def requireServerFeatureDecorator(f):
             @wraps(f)
@@ -934,6 +978,10 @@ class SyncplayClient(object):
                 pass
             message = utils.truncateText(message, constants.MAX_CHAT_MESSAGE_LENGTH)
             self._protocol.sendChatMessage(message)
+
+    @requireServerFeature("setOthersReadiness")
+    def setOthersReadiness(self, username, newReadyStatus):
+        self._protocol.setReady(newReadyStatus, True, username)
 
     def sendFeaturesUpdate(self, features):
         self._protocol.sendFeaturesUpdate(features)
@@ -1035,7 +1083,7 @@ class SyncplayClient(object):
         if newState != oldState:
             self.toggleReady(manuallyInitiated)
 
-    def setReady(self, username, isReady, manuallyInitiated=True):
+    def setReady(self, username, isReady, manuallyInitiated=True, setBy=None):
         oldReadyState = self.userlist.isReady(username)
         if oldReadyState is None:
             oldReadyState = False
@@ -1043,6 +1091,11 @@ class SyncplayClient(object):
         self.ui.userListChange()
         if oldReadyState != isReady:
             self._warnings.checkReadyStates()
+        if setBy:
+            if isReady:
+                self.ui.showMessage(getMessage("other-set-as-ready-notification").format(username, setBy))
+            else:
+                self.ui.showMessage(getMessage("other-set-as-not-ready-notification").format(username, setBy))
 
     @requireServerFeature("managedRooms")
     def setUserFeatures(self, username, features):
@@ -1325,10 +1378,10 @@ class SyncplayUserlist(object):
         self._client = client
         self._roomUsersChanged = True
 
-    def isReadinessSupported(self):
+    def isReadinessSupported(self, requiresOtherUsers=True):
         if not utils.meetsMinVersion(self._client.serverVersion, constants.USER_READY_MIN_VERSION):
             return False
-        elif self.onlyUserInRoomWhoSupportsReadiness():
+        elif self.onlyUserInRoomWhoSupportsReadiness() and requiresOtherUsers:
             return False
         else:
             return self._client.serverFeatures["readiness"]
@@ -1667,10 +1720,10 @@ class UiManager(object):
     def setSSLMode(self, sslMode, sslInformation=""):
         self.__ui.setSSLMode(sslMode, sslInformation)
 
-    def showMessage(self, message, noPlayer=False, noTimestamp=False, OSDType=constants.OSD_NOTIFICATION, mood=constants.MESSAGE_NEUTRAL):
+    def showMessage(self, message, noPlayer=False, noTimestamp=False, OSDType=constants.OSD_NOTIFICATION, mood=constants.MESSAGE_NEUTRAL, isMotd=False):
         if not noPlayer:
             self.showOSDMessage(message, duration=constants.OSD_DURATION, OSDType=OSDType, mood=mood)
-        self.__ui.showMessage(message, noTimestamp)
+        self.__ui.showMessage(message, noTimestamp=noTimestamp, isMotd=isMotd)
 
     def updateAutoPlayState(self, newState):
         self.__ui.updateAutoPlayState(newState)
@@ -1838,7 +1891,7 @@ class SyncplayPlaylist():
         if self._client.playerIsNotReady():
             if not self.addedChangeListCallback:
                 self.addedChangeListCallback = True
-                self._client.addPlayerReadyCallback(lambda x: self.changeToPlaylistIndex(index, username))
+                self._client.addPlayerReadyCallback(lambda x: self.changeToPlaylistIndex(index, username, resetPosition))
             return
         try:
             filename = self._playlist[index]
@@ -1854,10 +1907,22 @@ class SyncplayPlaylist():
         self._playlistIndex = index
         if username is None:
             if self._client.isConnectedAndInARoom() and self._client.sharedPlaylistIsEnabled():
-                if resetPosition:
-                    self._client.rewindFile()
                 self._client.setPlaylistIndex(index)
+                filename = self._playlist[index]
+                self._ui.setPlaylistIndexFilename(filename)
+                if resetPosition:
+                    self._ui.showDebugMessage("Pausing due to index change")
+                    state = {}
+                    state["playstate"] = {}
+                    state["playstate"]["position"] = 0
+                    state["playstate"]["paused"] = True
+                    self._client.lastAdvanceTime = time.time()
+                    self._client._protocol.sendMessage({"State": state})
+                    self._playerPaused = True
+                    self._client.autoplayCheck()
         elif index is not None:
+            filename = self._playlist[index]
+            self._ui.setPlaylistIndexFilename(filename)
             self._ui.showMessage(getMessage("playlist-selection-changed-notification").format(username))
             self.switchToNewPlaylistIndex(index, resetPosition=resetPosition)
 
@@ -1883,7 +1948,12 @@ class SyncplayPlaylist():
             self.queuedIndexFilename = self._playlist[index]
         except:
             self.queuedIndexFilename = None
-            self._ui.showDebugMessage("Failed to find index {} in plauylist".format(index))
+            self._ui.showDebugMessage("Failed to find index {} in playlist".format(index))
+        if resetPosition and index is not None:
+            filename = self._playlist[index]
+            if (not utils.isURL(filename)) or self._client.isURITrusted(filename):
+                self._client.prepareToChangeToNewPlaylistItemAndRewind()
+
         self._lastPlaylistIndexChange = time.time()
         if self._client.playerIsNotReady():
             self._client.addPlayerReadyCallback(lambda x: self.switchToNewPlaylistIndex(index, resetPosition))
@@ -2187,6 +2257,9 @@ class FileSwitchManager(object):
                 self.currentlyUpdating = True
                 dirsToSearch = self.mediaDirectories
 
+                if not self.folderSearchEnabled:
+                    return
+
                 if dirsToSearch:
                     # Spin up hard drives to prevent premature timeout
                     randomFilename = "RandomFile"+str(random.randrange(10000, 99999))+".txt"
@@ -2206,13 +2279,21 @@ class FileSwitchManager(object):
                     # Actual directory search
                     newMediaFilesCache = {}
                     startTime = time.time()
+                    fileCount = 0
+                    lastWarningTime = None
                     for directory in dirsToSearch:
                         for root, dirs, files in os.walk(directory):
+                            fileCount += 1
                             newMediaFilesCache[root] = files
-                            if time.time() - startTime > constants.FOLDER_SEARCH_TIMEOUT:
-                                self.directorySearchError = getMessage("folder-search-timeout-error").format(directory)
+                            timeTakenSoFar = time.time() - startTime
+                            if timeTakenSoFar > constants.FOLDER_SEARCH_TIMEOUT:
+                                reactor.callLater(0.1, self._client.ui.showErrorMessage, getMessage("folder-search-timeout-error").format(directory, fileCount),False)
                                 self.folderSearchEnabled = False
                                 return
+                            if timeTakenSoFar > constants.FOLDER_SEARCH_WARNING_THRESHOLD:
+                                if not lastWarningTime or timeTakenSoFar - lastWarningTime >= 1:
+                                    reactor.callLater(0.1, self._client.ui.showErrorMessage, getMessage("folder-search-timeout-warning").format(int(timeTakenSoFar), fileCount, directory),False)
+                                    lastWarningTime = timeTakenSoFar
 
                     if self.mediaFilesCache != newMediaFilesCache:
                         self.mediaFilesCache = newMediaFilesCache
@@ -2240,33 +2321,12 @@ class FileSwitchManager(object):
                     if os.path.isfile(filepath):
                         return filepath
 
-        if highPriority and self.folderSearchEnabled and self.mediaDirectories is not None:
+        if self.folderSearchEnabled and self.mediaDirectories is not None:
             directoryList = self.mediaDirectories
-            # Spin up hard drives to prevent premature timeout
-            randomFilename = "RandomFile"+str(random.randrange(10000, 99999))+".txt"
             for directory in directoryList:
-                startTime = time.time()
-                if os.path.isfile(os.path.join(directory, randomFilename)):
-                    randomFilename = "RandomFile"+str(random.randrange(10000, 99999))+".txt"
-                    print("Found random file (?)")
-                if not self.folderSearchEnabled:
-                    return
-                if time.time() - startTime > constants.FOLDER_SEARCH_FIRST_FILE_TIMEOUT:
-                    self.folderSearchEnabled = False
-                    self.directorySearchError = getMessage("folder-search-first-file-timeout-error").format(directory)
-                    return
-
-            startTime = time.time()
-            if filename and directoryList:
-                for directory in directoryList:
-                    for root, dirs, files in os.walk(directory):
-                        if filename in files:
-                            return os.path.join(root, filename)
-                        if time.time() - startTime > constants.FOLDER_SEARCH_TIMEOUT:
-                            self.folderSearchEnabled = False
-                            self.directorySearchError = getMessage("folder-search-timeout-error").format(directory)
-                            return None
-            return None
+                filepath = os.path.join(directory, filename)
+                if os.path.isfile(filepath):
+                    return filepath
 
     def areWatchedFilenamesInCache(self):
         if self.filenameWatchlist is not None:

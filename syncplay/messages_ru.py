@@ -61,6 +61,10 @@ ru = {
     "failed-to-identify-as-controller-notification": "{} не прошел идентификацию в качестве оператора комнаты.",
     "authenticated-as-controller-notification": "{} вошёл как оператор комнаты.",
     "created-controlled-room-notification": "Создана управляемая комната '{}' с паролем '{}'. Сохраните эти данные!\n\nВ управляемых комнатах всех синхронизируют с оператором (-ами) комнаты, только у которых есть права ставить и снимать с паузы, перематывать и изменять список воспроизведения.\n\nПопросите обычных зрителей подключиться к комнате '{}', а операторы могут подключиться к комнате '{}', чтобы автоматически авторизироваться.", # RoomName, operatorPassword, roomName, roomName:operatorPassword
+
+    "other-set-as-ready-notification": "{} was set as ready by {}",  # User set as ready, user who set them as ready # TODO: Translate
+    "other-set-as-not-ready-notification": "{} was set as not ready by {}", # User set as not ready, user who set them as not ready # TODO: Translate
+
     "file-different-notification": "Вероятно, файл, который вы смотрите, отличается от того, который смотрит {}.",  # User
     "file-differences-notification": "Ваш файл отличается: {}",  # Differences
     "room-file-differences": "Несовпадения файла: {}",  # File differences (filename, size, and/or duration)
@@ -97,6 +101,8 @@ ru = {
     "commandlist-notification/offset": "\to[+-]duration - offset local playback by the given duration (in seconds or min:sec) from the server seek position - this is a deprecated feature", # TODO: Translate
     "commandlist-notification/help": "\th - помощь",
     "commandlist-notification/toggle": "\tt - переключить статус готов/не готов к просмотру",
+    "commandlist-notification/setready": "\tsr [name] - sets user as ready",  # TODO: Translate
+    "commandlist-notification/setnotready": "\tsn [name] - sets user as not ready",  # TODO: Translate
     "commandlist-notification/create": "\tc [имя комнаты] - создать управляемую комнату с таким же именем, как у текущей",
     "commandlist-notification/auth": "\ta [пароль] - авторизоваться как оператор комнаты с помощью пароля",
     "commandlist-notification/chat": "\tch [сообщение] - выслать сообщение в комнату",
@@ -157,6 +163,7 @@ ru = {
     "feature-chat": "чат",  # used for not-supported-by-server-error
     "feature-readiness": "готовность",  # used for not-supported-by-server-error
     "feature-managedRooms": "управляемые комнаты",  # used for not-supported-by-server-error
+    "feature-setOthersReadiness": "readiness override",  # used for not-supported-by-server-error # TODO: Translate
 
     "not-supported-by-server-error": "Возможность '{}' не поддерживается сервером.",  # feature
     "shared-playlists-not-supported-by-server-error": "Общие списки воспроизведения могут не поддерживаться сервером. Для корректной работы требуется сервер Syncplay {}+, вы подключены к серверу Syncplay {}.",  # minVersion, serverVersion
@@ -166,7 +173,8 @@ ru = {
     "invalid-offset-value": "Некорректное смещение",
 
     "switch-file-not-found-error": "Невозможно найти файл '{0}'. Проверьте папки воспроизведения.",  # File not found
-    "folder-search-timeout-error": "Поиск файла был прерван в папке '{}'. Это может произойти из-за большого количества подпапок. Для корректной работы поиска файлов зайдите через выпадающее меню в Файл->Папки воспроизведения и удалите данную папку из списка или замените её на нужную подпапку. Если на самом деле с папкой всё в порядке, вы можете cнова её включить через выпадающее меню Файл->Папки воспроизведения.", # Folder
+    "folder-search-timeout-error": "Поиск файла был прерван в папке '{}'. Это может произойти из-за большого количества подпапок (after having processed the first {} files). Для корректной работы поиска файлов зайдите через выпадающее меню в Файл->Папки воспроизведения и удалите данную папку из списка или замените её на нужную подпапку. Если на самом деле с папкой всё в порядке, вы можете cнова её включить через выпадающее меню Файл->Папки воспроизведения.", # Folder, Files processed - TODO: Update translation (refer back to original English text)
+    "folder-search-timeout-warning": "Warning: It has taken {} seconds to scan {:,} files in the folder '{}'. This will occur if you select a folder with too many sub-folders in your list of media folders to search through or if there are too many files to process.",  # Folder, Files processed. Note: {:,} is {} but with added commas seprators. TODO: Translate
     "folder-search-first-file-timeout-error": "Поиск файла в '{}' был прерван, так как невозможно открыть каталог. Это может произойти, если это сетевой диск или диск перешёл в режим экономии энергии. Для корректной работы поиска файлов зайдите через выпадающее меню в Файл->Папки воспроизведения и удалите данную папку, или решите проблему изменив параметры энергосбережения.",  # Folder
     "added-file-not-in-media-directory-error": "Вы загрузили файл из '{}', который не числится в папках воспроизведения. Вы можете добавить его через выпадающее меню Файл->Папки воспроизведения.",  # Folder
     "no-media-directories-error": "Вы не указали папки воспроизведения. Для корректной работы зайдите через выпадающее меню в Файл->Папки воспроизведения и укажите нужные каталоги.",
@@ -471,6 +479,8 @@ ru = {
     # Server messages to client
     "new-syncplay-available-motd-message": "Вы используете Syncplay версии {}. На https://syncplay.pl/ доступна более новая версия.",  # ClientVersion
     "persistent-rooms-notice": "ВНИМАНИЕ: Этот сервер использует постоянные комнаты, это означает что информация списка воспроизведения сохраняется между сеансами воспроизведения. Если вы хотите создать комнату, в которой информация не сохраняется, поставьте -temp в конце названия комнаты.",
+    "ready-chat-message": "I have set {} as ready.",  # User # TODO: Translate
+    "not-ready-chat-message": "I have set {} as not ready.",  # User # TODO: Translate
 
     # Server notifications
     "welcome-server-notification": "Добро пожаловать на сервер Syncplay версии {0}",  # version
@@ -532,6 +542,9 @@ ru = {
     "addotherusersstreamstoplaylist-menu-label": "Добавить поток {} в список воспроизведения",
     "openusersstream-menu-label": "Открыть поток {}",
     "openusersfile-menu-label": "Открыть файл {}",
+
+    "setasready-menu-label": "Set {} as ready",  # [Username] # TODO: Translate
+    "setasnotready-menu-label": "Set {} as not ready",  # [Username] # TODO: Translate
 
     "playlist-instruction-item-message": "Перетащите сюда файлы, чтобы добавить их в общий список.",
     "sharedplaylistenabled-tooltip": "Оператор комнаты может добавлять файлы в список общего воспроизведения для удобного совместного просмотра. Папки воспроизведения настраиваются в меню 'Файл'.",

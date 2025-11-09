@@ -62,6 +62,9 @@ pt_PT = {
     "authenticated-as-controller-notification": "{} autenticou-se como um administrador da sala",
     "created-controlled-room-notification": "Criou a sala controlada '{}' com a senha '{}'. Por favor, guarda essa informação para futura referência!\n\nIn managed rooms everyone is kept in sync with the room operator(s) who are the only ones who can pause, unpause, seek, and change the playlist.\n\nYou should ask regular viewers to join the room '{}' but the room operators can join the room '{}' to automatically authenticate themselves.", # RoomName, operatorPassword, roomName, roomName:operatorPassword # TODO: Translate
 
+    "other-set-as-ready-notification": "{} was set as ready by {}",  # User set as ready, user who set them as ready # TODO: Translate
+    "other-set-as-not-ready-notification": "{} was set as not ready by {}", # User set as not ready, user who set them as not ready # TODO: Translate
+
     "file-different-notification": "O ficheiro que você está tocando parece ser diferente do ficheiro de {}",  # User
     "file-differences-notification": "Seus ficheiros se diferem da(s) seguinte(s) forma(s): {}",  # Differences
     "room-file-differences": "Diferenças de ficheiros: {}",  # File differences (filename, size, and/or duration)
@@ -98,6 +101,8 @@ pt_PT = {
     "commandlist-notification/offset": "\to[+-]duration - offset local playback by the given duration (in seconds or min:sec) from the server seek position - this is a deprecated feature", # TODO: Translate
     "commandlist-notification/help": "\th - esta mensagem de ajuda",
     "commandlist-notification/toggle": "\tt - alterna o seu status de prontidão para assistir",
+    "commandlist-notification/setready": "\tsr [name] - sets user as ready",  # TODO: Translate
+    "commandlist-notification/setnotready": "\tsn [name] - sets user as not ready",  # TODO: Translate
     "commandlist-notification/create": "\tc [nome] - cria sala gerenciada usando o nome da sala atual",
     "commandlist-notification/auth": "\ta [senha] - autentica-se como administrador da sala com a senha",
     "commandlist-notification/chat": "\tch [mensagem] - envia uma mensagem no chat da sala",
@@ -158,6 +163,7 @@ pt_PT = {
     "feature-chat": "chat",  # used for not-supported-by-server-error
     "feature-readiness": "prontidão",  # used for not-supported-by-server-error
     "feature-managedRooms": "salas administradas",  # used for not-supported-by-server-error
+    "feature-setOthersReadiness": "readiness override",  # used for not-supported-by-server-error # TODO: Translate
 
     "not-supported-by-server-error": "O recurso {} não é suportado por este servidor.",  # feature
     "shared-playlists-not-supported-by-server-error": "O recurso de playlists compartilhadas pode não ser suportado por este servidor. Para garantir que funcione corretamente, é necessário um servidor a correr Syncplay {} ou superior, mas este está correndoo Syncplay {}.",  # minVersion, serverVersion
@@ -167,7 +173,8 @@ pt_PT = {
     "invalid-offset-value": "Valor de deslocamento inválido",
 
     "switch-file-not-found-error": "Não foi possível mudar para o ficheiro '{0}'. O Syncplay procura nos pastas de mídia especificados.",  # File not found
-    "folder-search-timeout-error": "A busca por mídias no pasta de mídias foi cancelada pois demorou muito tempo para procurar em '{}'. Isso ocorre quando você seleciona uma pasta com muitas subpastas em sua lista de pastas de mídias a serem pesquisadas.  Para que a troca automática de ficheiros funcione novamente, selecione 'Ficheiro -> Definir pastas de mídias' na barra de menus e remova esse pasta ou substitua-o por uma subpasta apropriada. Se a pasta não tiver problemas, é possível reativá-la selecionando 'Ficheiro -> Definir pastas de mídias' e pressionando 'OK'.",  # Folder
+    "folder-search-timeout-error": "A busca por mídias no pasta de mídias foi cancelada pois demorou muito tempo para procurar em '{}' (after having processed the first {} files). Isso ocorre quando você seleciona uma pasta com muitas subpastas em sua lista de pastas de mídias a serem pesquisadas.  Para que a troca automática de ficheiros funcione novamente, selecione 'Ficheiro -> Definir pastas de mídias' na barra de menus e remova esse pasta ou substitua-o por uma subpasta apropriada. Se a pasta não tiver problemas, é possível reativá-la selecionando 'Ficheiro -> Definir pastas de mídias' e pressionando 'OK'.",  # Folder, Files processed - TODO: Update translation (refer back to original English text)
+    "folder-search-timeout-warning": "Warning: It has taken {} seconds to scan {:,} files in the folder '{}'. This will occur if you select a folder with too many sub-folders in your list of media folders to search through or if there are too many files to process.",  # Folder, Files processed. Note: {:,} is {} but with added commas seprators. TODO: Translate
     "folder-search-first-file-timeout-error": "A busca por mídias em '{}' foi interrompida, pois demorou muito para acessar o pasta. Isso pode acontecer se for uma unidade de rede ou se você configurar o seu dispositivo para hibernar depois de um período de inatividade. Para que a troca automática de ficheiros funcione novamente, vá para 'Ficheiro -> Definir pastas de mídias' e remova o pasta ou resolva o problema (por exemplo, alterando as configurações de economia de energia da unidade).",  # Folder
     "added-file-not-in-media-directory-error": "Você carregou um ficheiro em '{}', que não é um pasta de mídias conhecido. Você pode adicioná-lo isso como um pasta de mídia selecionando 'Ficheiro -> Definir pastas de mídias' na barra de menus.",  # Folder
     "no-media-directories-error": "Nenhum pasta de mídias foi definido. Para que os recursos de playlists compartilhadas e troca automática de ficheiros funcionem corretamente, selecione 'Ficheiro -> Definir pastas de mídias' e especifique onde o Syncplay deve procurar para encontrar ficheiros de mídia.",
@@ -473,6 +480,8 @@ pt_PT = {
     # Server messages to client
     "new-syncplay-available-motd-message": "Você está usando o Syncplay {}, mas uma versão mais nova está disponível em https://syncplay.pl",  # ClientVersion
     "persistent-rooms-notice": "NOTICE: This server uses persistent rooms, which means that the playlist information is stored between playback sessions. If you want to create a room where information is not saved then put -temp at the end of the room name.", # TO DO: Translate - NOTE: Do not translate the word -temp
+    "ready-chat-message": "I have set {} as ready.",  # User # TODO: Translate
+    "not-ready-chat-message": "I have set {} as not ready.",  # User # TODO: Translate
 
     # Server notifications
     "welcome-server-notification": "Seja bem-vindo ao servidor de Syncplay, versão {0}",  # version
@@ -536,6 +545,9 @@ pt_PT = {
     "addotherusersstreamstoplaylist-menu-label": "Adicionar transmissão de {} à playlist",  # [Username]
     "openusersstream-menu-label": "Abrir transmissão de {}",  # [username]'s
     "openusersfile-menu-label": "Abrir ficheiro de {}",  # [username]'s
+
+    "setasready-menu-label": "Set {} as ready",  # [Username] # TODO: Translate
+    "setasnotready-menu-label": "Set {} as not ready",  # [Username] # TODO: Translate
 
     "playlist-instruction-item-message": "Arraste um ficheiro aqui para adicioná-lo à playlist compartilhada.",
     "sharedplaylistenabled-tooltip": "Operadores da sala podem adicionar ficheiros para a playlist compartilhada para tornar mais fácil para todo mundo assistir a mesma coisa. Configure os pastas de mídia em 'Miscelânea'.",

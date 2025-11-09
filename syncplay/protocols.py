@@ -141,11 +141,10 @@ class SyncClientProtocol(JSONCommandProtocol):
             self._client.setRoom(roomName)
         self.logged = True
         if self.persistentRoomWarning(featureList):
-            if len(motd) > 0:
-                motd += "\n\n"
-            motd += getMessage("persistent-rooms-notice")
+            span = "\n\n" if motd else ""
+            motd = getMessage("persistent-rooms-notice") + span + motd
         if motd:
-            self._client.ui.showMessage(motd, True, True)
+            self._client.ui.showMessage(motd, noPlayer=True, noTimestamp=True, isMotd=True)
         self._client.ui.showMessage(getMessage("connected-successful-notification"))
         self._client.connected()
         self._client.sendFile()
@@ -201,7 +200,8 @@ class SyncClientProtocol(JSONCommandProtocol):
             elif command == "ready":
                 user, isReady = values["username"], values["isReady"]
                 manuallyInitiated = values["manuallyInitiated"] if "manuallyInitiated" in values else True
-                self._client.setReady(user, isReady, manuallyInitiated)
+                setBy = values["setBy"] if "setBy" in values else None
+                self._client.setReady(user, isReady, manuallyInitiated, setBy)
             elif command == "playlistIndex":
                 user = values['user']
                 resetPosition = True
@@ -330,13 +330,22 @@ class SyncClientProtocol(JSONCommandProtocol):
         userMessage = message['message']
         self._client.ui.showChatMessage(username, userMessage)
 
-    def setReady(self, isReady, manuallyInitiated=True):
-        self.sendSet({
-            "ready": {
-                "isReady": isReady,
-                "manuallyInitiated": manuallyInitiated
-            }
-        })
+    def setReady(self, isReady, manuallyInitiated=True, username=None):
+        if username:
+            self.sendSet({
+                "ready": {
+                    "isReady": isReady,
+                    "manuallyInitiated": manuallyInitiated,
+                    "username": username
+                }
+            })
+        else:
+            self.sendSet({
+                "ready": {
+                    "isReady": isReady,
+                    "manuallyInitiated": manuallyInitiated
+                }
+            })
 
     def setPlaylist(self, files):
         self.sendSet({
@@ -546,9 +555,8 @@ class SyncServerProtocol(JSONCommandProtocol):
         hello["features"] = self._factory.getFeatures()
         hello["motd"] = self._factory.getMotd(userIp, username, room, clientVersion)
         if self.persistentRoomWarning(clientFeatures=self._features, serverFeatures=hello["features"]):
-            if len(hello["motd"]) > 0:
-                hello["motd"] += "\n\n"
-            hello["motd"] += getMessage("persistent-rooms-notice")
+            span = "\n\n" if hello["motd"] else ""
+            hello["motd"] = getMessage("persistent-rooms-notice") + span + hello["motd"]
         self.sendMessage({"Hello": hello})
 
     @requireLogged
@@ -566,7 +574,8 @@ class SyncServerProtocol(JSONCommandProtocol):
                 self._factory.authRoomController(self._watcher, password, room)
             elif command == "ready":
                 manuallyInitiated = set_[1]['manuallyInitiated'] if "manuallyInitiated" in set_[1] else False
-                self._factory.setReady(self._watcher, set_[1]['isReady'], manuallyInitiated=manuallyInitiated)
+                username = set_[1]['username'] if "username" in set_[1] else None
+                self._factory.setReady(self._watcher, set_[1]['isReady'], manuallyInitiated=manuallyInitiated, username=username)
             elif command == "playlistChange":
                 self._factory.setPlaylist(self._watcher, set_[1]['files'])
             elif command == "playlistIndex":
@@ -595,14 +604,24 @@ class SyncServerProtocol(JSONCommandProtocol):
             }
         })
 
-    def sendSetReady(self, username, isReady, manuallyInitiated=True):
-        self.sendSet({
-            "ready": {
-                "username": username,
-                "isReady": isReady,
-                "manuallyInitiated": manuallyInitiated
-            }
-        })
+    def sendSetReady(self, username, isReady, manuallyInitiated=True, setByUsername=None):
+        if setByUsername:
+            self.sendSet({
+                "ready": {
+                    "username": username,
+                    "isReady": isReady,
+                    "manuallyInitiated": manuallyInitiated,
+                    "setBy": setByUsername
+                }
+            })
+        else:
+            self.sendSet({
+                "ready": {
+                    "username": username,
+                    "isReady": isReady,
+                    "manuallyInitiated": manuallyInitiated
+                }
+            })
 
     def setPlaylist(self, username, files):
         self.sendSet({

@@ -99,7 +99,7 @@ class ConsoleUI(threading.Thread):
     def setFeatures(self, featureList):
         pass
 
-    def showMessage(self, message, noTimestamp=False):
+    def showMessage(self, message, noTimestamp=False, isMotd=False):
         message = message.encode(sys.stdout.encoding, 'replace')
         try:
             message = message.decode('utf-8')
@@ -230,6 +230,20 @@ class ConsoleUI(threading.Thread):
                 self.showErrorMessage(getMessage("playlist-invalid-index-error"))
         elif command.group('command') in constants.COMMANDS_NEXT:
             self._syncplayClient.playlist.loadNextFileInPlaylist()
+
+        elif command.group('command') in constants.COMMANDS_SETREADY:
+            try:
+                username = command.group('parameter')
+                self._syncplayClient.setOthersReadiness(username, True)
+            except:
+                pass
+
+        elif command.group('command') in constants.COMMANDS_SETNOTREADY:
+            try:
+                username = command.group('parameter')
+                self._syncplayClient.setOthersReadiness(username, False)
+            except:
+                pass
 
         else:
             if self._tryAdvancedCommands(data):

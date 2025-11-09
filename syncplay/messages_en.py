@@ -25,6 +25,10 @@ en = {
 
     "connection-attempt-notification": "Attempting to connect to {}:{}",  # Port, IP
     "reconnection-attempt-notification": "Connection with server lost, attempting to reconnect",
+    "reconnect-menu-triggered-notification": "Manual reconnect initiated - will attempt fresh connection to {}:{} in 2 seconds...",
+    "reconnect-failed-no-host-error": "Cannot reconnect: no server information available",
+    "reconnect-failed-no-port-error": "Cannot reconnect: invalid server configuration",
+    "reconnect-failed-error": "Reconnection failed: {}",
     "disconnection-notification": "Disconnected from server",
     "connection-failed-notification": "Connection with server failed",
     "connected-successful-notification": "Successfully connected to server",
@@ -62,6 +66,9 @@ en = {
     "authenticated-as-controller-notification": "{} authenticated as a room operator",
     "created-controlled-room-notification": "Created managed room '{}' with password '{}'. Please save this information for future reference!\n\nIn managed rooms everyone is kept in sync with the room operator(s) who are the only ones who can pause, unpause, seek, and change the playlist.\n\nYou should ask regular viewers to join the room '{}' but the room operators can join the room '{}' to automatically authenticate themselves.",  # RoomName, operatorPassword, roomName, roomName:operatorPassword
 
+    "other-set-as-ready-notification": "{} was set as ready by {}", # User set as ready, user who set them as ready
+    "other-set-as-not-ready-notification": "{} was set as not ready by {}", # User set as not ready, user who set them as not ready
+
     "file-different-notification": "File you are playing appears to be different from {}'s",  # User
     "file-differences-notification": "Your file differs in the following way(s): {}",  # Differences
     "room-file-differences": "File differences: {}",  # File differences (filename, size, and/or duration)
@@ -98,6 +105,8 @@ en = {
     "commandlist-notification/offset": "\to[+-]duration - offset local playback by the given duration (in seconds or min:sec) from the server seek position - this is a deprecated feature",
     "commandlist-notification/help": "\th - this help",
     "commandlist-notification/toggle": "\tt - toggles whether you are ready to watch or not",
+    "commandlist-notification/setready": "\tsr [name] - sets user as ready",
+    "commandlist-notification/setnotready": "\tsn [name] - sets user as not ready",
     "commandlist-notification/create": "\tc [name] - create managed room using name of current room",
     "commandlist-notification/auth": "\ta [password] - authenticate as room operator with operator password",
     "commandlist-notification/chat": "\tch [message] - send a chat message in a room",
@@ -158,6 +167,7 @@ en = {
     "feature-chat": "chat",  # used for not-supported-by-server-error
     "feature-readiness": "readiness",  # used for not-supported-by-server-error
     "feature-managedRooms": "managed rooms",  # used for not-supported-by-server-error
+    "feature-setOthersReadiness": "readiness override",  # used for not-supported-by-server-error
 
     "not-supported-by-server-error": "The {} feature is not supported by this server..",  # feature
     "shared-playlists-not-supported-by-server-error": "The shared playlists feature may not be supported by the server. To ensure that it works correctly requires a server running Syncplay  {}+, but the server is running Syncplay {}.",  # minVersion, serverVersion
@@ -167,7 +177,8 @@ en = {
     "invalid-offset-value": "Invalid offset value",
 
     "switch-file-not-found-error": "Could not switch to file '{0}'. Syncplay looks in specified media directories.",  # File not found
-    "folder-search-timeout-error": "The search for media in media directories was aborted as it took too long to search through '{}'. This will occur if you select a folder with too many sub-folders in your list of media folders to search through. For automatic file switching to work again please select File->Set Media Directories in the menu bar and remove this directory or replace it with an appropriate sub-folder. If the folder is actually fine then you can re-enable it by selecting File->Set Media Directories and pressing 'OK'.",  # Folder
+    "folder-search-timeout-error": "The search for media in media directories was aborted as it took too long to search through '{}' after having processed the first {:,} files. This will occur if you select a folder with too many sub-folders in your list of media folders to search through or if there are too many files to process. For automatic file switching to work again please select File->Set Media Directories in the menu bar and remove this directory or replace it with an appropriate sub-folder. If the folder is actually fine then you can re-enable it by selecting File->Set Media Directories and pressing 'OK'.",  # Folder, Files processed. Note: {:,} is {} but with added commas seprators.
+    "folder-search-timeout-warning": "Warning: It has taken {} seconds to scan {:,} files in the folder '{}'. This will occur if you select a folder with too many sub-folders in your list of media folders to search through or if there are too many files to process.",  # Folder, Files processed. Note: {:,} is {} but with added commas seprators.
     "folder-search-first-file-timeout-error": "The search for media in '{}' was aborted as it took too long to access the directory. This could happen if it is a network drive or if you configure your drive to spin down after a period of inactivity. For automatic file switching to work again please go to File->Set Media Directories and either remove the directory or resolve the issue (e.g. by changing power saving settings).",  # Folder
     "added-file-not-in-media-directory-error": "You loaded a file in '{}' which is not a known media directory. You can add this as a media directory by selecting File->Set Media Directories in the menu bar.",  # Folder
     "no-media-directories-error": "No media directories have been set. For shared playlist and file switching features to work properly please select File->Set Media Directories and specify where Syncplay should look to find media files.",
@@ -327,6 +338,7 @@ en = {
     "setmediadirectories-menu-label": "Set media &directories",
     "loadplaylistfromfile-menu-label": "&Load playlist from file",
     "saveplaylisttofile-menu-label": "&Save playlist to file",
+    "reconnect-menu-label": "&Reconnect to server",
     "exit-menu-label": "E&xit",
     "advanced-menu-label": "&Advanced",
     "window-menu-label": "&Window",
@@ -474,6 +486,8 @@ en = {
     # Server messages to client
     "new-syncplay-available-motd-message": "You are using Syncplay {} but a newer version is available from https://syncplay.pl",  # ClientVersion
     "persistent-rooms-notice": "NOTICE: This server uses persistent rooms, which means that the playlist information is stored between playback sessions. If you want to create a room where information is not saved then put -temp at the end of the room name.", # NOTE: Do not translate the word -temp
+    "ready-chat-message": "I have set {} as ready.", # User
+    "not-ready-chat-message": "I have set {} as not ready.", # User
 
     # Server notifications
     "welcome-server-notification": "Welcome to Syncplay server, ver. {0}",  # version
@@ -537,6 +551,9 @@ en = {
     "addotherusersstreamstoplaylist-menu-label": "Add {}' stream to playlist",  # [Username]
     "openusersstream-menu-label": "Open {}'s stream",  # [username]'s
     "openusersfile-menu-label": "Open {}'s file",  # [username]'s
+
+    "setasready-menu-label": "Set {} as ready", # [Username]
+    "setasnotready-menu-label": "Set {} as not ready", # [Username]
 
     "playlist-instruction-item-message": "Drag file here to add it to the shared playlist.",
     "sharedplaylistenabled-tooltip": "Room operators can add files to a synced playlist to make it easy for everyone to watching the same thing. Configure media directories under 'Misc'.",

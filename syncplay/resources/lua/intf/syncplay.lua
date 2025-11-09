@@ -90,7 +90,7 @@ local durationdelay = 500000 -- Pause for get_duration command etc for increased
 local loopsleepduration = 2500 -- Pause for every event loop (uses microseconds)
 local quitcheckfrequency = 20 -- Check whether VLC has closed every X loops
 
-local host = "localhost"
+local host = "127.0.0.1"
 local port
 
 local titlemultiplier = 604800 -- One week
@@ -508,7 +508,7 @@ function do_command ( command, argument)
     elseif command == "set-rate"              then           errormsg = set_var("rate", radixsafe_tonumber(argument))
     elseif command == "set-title"             then           errormsg = set_var("title", radixsafe_tonumber(argument))
     elseif command == "display-osd"           then           errormsg = display_osd(argument)
-	elseif command == "display-secondary-osd" then           errormsg = display_secondary_osd(argument)
+    elseif command == "display-secondary-osd" then           errormsg = display_secondary_osd(argument)
     elseif command == "load-file"             then response           = load_file(argument)
     elseif command == "close-vlc"             then                      quit_vlc()
     else                                                     errormsg = unknowncommand
@@ -561,7 +561,7 @@ end
 while running == true do
     --accept new connections and select active clients
     local quitcheckcounter = 0
-	local fd = l:accept()
+    local fd = l:accept()
     local buffer, inputbuffer, responsebuffer = "", "", ""
     while fd >= 0 and running == true do
 
